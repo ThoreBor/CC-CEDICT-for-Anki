@@ -1,0 +1,25 @@
+CC-CEDICT
+Community maintained free Chinese-English dictionary.
+
+Published by MDBG
+
+License:
+Creative Commons Attribution-ShareAlike 4.0 International License
+https://creativecommons.org/licenses/by-sa/4.0/
+ 
+Referenced works:
+CEDICT - Copyright (C) 1997, 1998 Paul Andrew Denisowski
+ 
+CC-CEDICT can be downloaded from:
+https://www.mdbg.net/chinese/dictionary?page=cc-cedict
+ 
+Additions and corrections can be sent through:
+https://cc-cedict.org/editor/editor.php
+ 
+For more information about CC-CEDICT see:
+https://cc-cedict.org/wiki/
+
+Entries: 117695
+Publisher: MDBG
+License: https://creativecommons.org/licenses/by-sa/4.0/
+Version: 2019-12-28T06:41:48Z
