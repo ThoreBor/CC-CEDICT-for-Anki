@@ -1,4 +1,4 @@
-# CC-CEDICT for Anki v1.0 Copyright 2019 Thore Tyborski
+# CC-CEDICT for Anki v1.1 Copyright 2020 Thore Tyborski
 
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -29,7 +29,7 @@ from bs4 import BeautifulSoup
 import webbrowser
 from .dict_ui import start
 
-this_version = "v1.0"
+this_version = "v1.1"
 
 def UI():
 	s = start()

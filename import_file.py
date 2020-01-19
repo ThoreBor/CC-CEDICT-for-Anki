@@ -19,4 +19,4 @@ def importfile (deck, type):
 		ti.run()
 		tooltip("One card was added.")
 	except:
-		showWarning("Error. Make sure that you use a notetype with four fields (Traditional, Simplified, Pinyin and English).")
+		showWarning("Error. Make sure that you use a fitting notetype.")
