@@ -72,6 +72,7 @@ class Ui_Dialog(object):
 		font.setPointSize(8)
 		self.SearchButton.setFont(font)
 		self.SearchButton.setObjectName("SearchButton")
+		self.SearchButton.clicked.connect(self.search)
 		self.gridLayout.addWidget(self.SearchButton, 0, 2, 1, 1)
 
 		self.checkBox = QtWidgets.QCheckBox(self.layoutWidget)
