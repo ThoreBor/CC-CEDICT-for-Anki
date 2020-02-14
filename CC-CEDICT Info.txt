@@ -2,7 +2,7 @@ CC-CEDICT
 Community maintained free Chinese-English dictionary.
 
 Published by MDBG
-
+ 
 License:
 Creative Commons Attribution-ShareAlike 4.0 International License
 https://creativecommons.org/licenses/by-sa/4.0/
@@ -18,8 +18,8 @@ https://cc-cedict.org/editor/editor.php
  
 For more information about CC-CEDICT see:
 https://cc-cedict.org/wiki/
-
-Entries: 117695
-Publisher: MDBG
-License: https://creativecommons.org/licenses/by-sa/4.0/
-Version: 2019-12-28T06:41:48Z
+ 
+Entries=117930
+Publisher=MDBG
+License=https://creativecommons.org/licenses/by-sa/4.0/
+Date=2020-02-12T06:31:48Z
