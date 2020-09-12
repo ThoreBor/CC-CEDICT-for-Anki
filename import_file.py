@@ -14,6 +14,7 @@ def importfile (deck, type):
 		deck['mid'] = m['id']
 		mw.col.decks.save(deck)
 		m['did'] = did
+		mw.col.models.save(m)
 		ti = TextImporter(mw.col, file)
 		ti.initMapping()
 		ti.run()
