@@ -421,8 +421,6 @@ class Ui_Dialog(object):
 			simp = Hanzi[0]
 		Pinyin = self.Pinyin.text()
 		English = self.English.text()
-		English = English.replace("\n", "，")
-		English = English[:-1]
 
 		# Wrap the english field in '"'. Escape the " character in the value.
 		# This is needed to import the card correctly when a value contains the ',' character or others
