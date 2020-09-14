@@ -1,1 +1,379 @@
-
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1080</width>
+    <height>391</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>CC-CEDICT for Anki</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="icons.qrc">
+    <normaloff>:/icon/icons/icon.png</normaloff>:/icon/icons/icon.png</iconset>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_4">
+   <item row="0" column="1" rowspan="3">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Minimum</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="2">
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>472</width>
+        <height>151</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="Hanzi">
+         <property name="font">
+          <font>
+           <family>SimSun</family>
+           <pointsize>20</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>漢字
+汉字</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+         <property name="textInteractionFlags">
+          <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="Pinyin">
+         <property name="font">
+          <font>
+           <family>Times New Roman</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Pinyin</string>
+         </property>
+         <property name="textInteractionFlags">
+          <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="English">
+         <property name="font">
+          <font>
+           <family>Times New Roman</family>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>English</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item row="0" column="0" rowspan="3">
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QLineEdit" name="Query">
+       <property name="font">
+        <font>
+         <family>SimHei</family>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" colspan="5">
+      <widget class="QListWidget" name="Results">
+       <property name="font">
+        <font>
+         <family>SimHei</family>
+         <pointsize>10</pointsize>
+        </font>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QComboBox" name="Input_Type">
+       <item>
+        <property name="text">
+         <string>Simplified</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Traditional</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>English</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="SearchButton">
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Search</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="4">
+      <widget class="QCheckBox" name="checkBox">
+       <property name="text">
+        <string>Show only exact matches</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="2">
+    <widget class="QGroupBox" name="AddCard">
+     <property name="title">
+      <string>Add Card</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="0">
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="0">
+         <widget class="QLabel" name="Deck_Label">
+          <property name="text">
+           <string>Deck:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="Notetype_Label">
+          <property name="text">
+           <string>Notetype:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="Field1_Label">
+          <property name="text">
+           <string>Field 1:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLabel" name="Field2_Label">
+          <property name="text">
+           <string>Field 2:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2">
+         <widget class="QLabel" name="Field3_Label">
+          <property name="text">
+           <string>Field 3:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="QLabel" name="Field4_Label">
+          <property name="text">
+           <string>Field 4:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QComboBox" name="Field1">
+          <item>
+           <property name="text">
+            <string>Simplified</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Traditional</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Pinyin</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>English</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QComboBox" name="Field2">
+          <item>
+           <property name="text">
+            <string>Traditional</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Simplified</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Pinyin</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>English</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="3" column="2">
+         <widget class="QComboBox" name="Field3">
+          <item>
+           <property name="text">
+            <string>Pinyin</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Simplified</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Traditional</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>English</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Nothing</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="3" column="3">
+         <widget class="QComboBox" name="Field4">
+          <item>
+           <property name="text">
+            <string>English</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Simplified</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Traditional</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Pinyin</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Nothing</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="4" column="3">
+         <widget class="QPushButton" name="About">
+          <property name="text">
+           <string>About</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="2">
+         <widget class="QComboBox" name="Deck"/>
+        </item>
+        <item row="1" column="2" colspan="2">
+         <widget class="QComboBox" name="Notetype"/>
+        </item>
+        <item row="4" column="0" colspan="3">
+         <widget class="QPushButton" name="Add">
+          <property name="text">
+           <string>Add card(s)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>
