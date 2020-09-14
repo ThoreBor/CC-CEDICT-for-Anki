@@ -423,7 +423,16 @@ class Ui_Dialog(object):
 		English = self.English.text()
 		English = English.replace("\n", "，")
 		English = English[:-1]
-		
+
+		# Wrap the english field in '"'. Escape the " character in the value.
+		# This is needed to import the card correctly when a value contains the ',' character or others
+		# that are used to separate fields.
+		# The other three fields are unlikely to contain this character.
+		# see https://docs.ankiweb.net/#/importing
+		English = English.replace('"', '""')
+		English = '"{}"'.format(English)
+
+
 		if self.Field1.currentText() == "Simplified":
 			Field1_content = simp
 		if self.Field1.currentText() == "Traditional":
