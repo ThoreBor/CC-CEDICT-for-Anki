@@ -1,0 +1,4 @@
+mypy
+anki
+ankirspy
+aqt
