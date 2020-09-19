@@ -5,6 +5,7 @@ from os.path import dirname, join, realpath
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo, tooltip
+from aqt.main import ResetReason
 
 
 from .forms import dict_ui
@@ -268,6 +269,9 @@ class start_main(QDialog):
 		added_count = len(self.inputs) - len(self.duplicate)
 		tooltip("Added {} notes, skipped: {}, duplicate: {}".format(
 			added_count, len(self.skipped), len(self.duplicate)))
+		if added_count > 0:
+			# Signal queue needs to be rebuilt when edits are finished or by user.
+			mw.requireReset(reason=ResetReason.AddCardsAddNote)
 
 	def Add_Card(self):
 		if self.inputs:
