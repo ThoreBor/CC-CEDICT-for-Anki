@@ -4,7 +4,8 @@ from os.path import dirname, join, realpath
 
 from aqt import mw
 from aqt.qt import *
-from aqt.utils import showInfo
+from aqt.utils import showInfo, tooltip
+
 
 from .forms import dict_ui
 from .import_file import importfile
@@ -15,6 +16,10 @@ conn = connect(db_path)
 c = conn.cursor()
 
 
+def debug(s):
+	sys.stdout.write(s + "\n")
+
+
 class start_main(QDialog):
 
 	def __init__(self, parent=None):
@@ -23,6 +28,9 @@ class start_main(QDialog):
 		self.dialog = dict_ui.Ui_Dialog()
 		self.dialog.setupUi(self)
 		self.setupUI()
+		self.inputs = []
+		self.skipped = []
+		self.duplicate = []
 
 	def setupUI(self):
 
@@ -77,11 +85,44 @@ class start_main(QDialog):
 			line = str(simplified + "\t" + traditional + "\t" + p + "\t" + english)
 			self.dialog.Results.addItem(line)
 
+	def batch_mode_search(self, words):
+		for w in words:
+			self.search_word(w)
+		if self.skipped:
+			line = "Can't find {} words: {}".format(len(self.skipped), ",".join(self.skipped))
+			self.dialog.Results.addItem(line)
+
+	def search_word(self, word):
+		debug("search word: {}".format(word))
+		c.execute('SELECT * FROM dictionary WHERE hanzi_simp=?', (word,))
+		row = c.fetchone()
+		debug("row is {}".format(str(row)))
+		if row:
+			traditional = row[0]
+			simplified = row[1]
+			pin_ying = row[2]
+			english = row[3]
+			line = str(simplified + "\t" + traditional + "\t" + pin_ying + "\t" + english)
+			self.dialog.Results.addItem(line)
+			self.inputs.append(row)
+		else:
+			self.skipped.append(word)
+
 	def search(self):
-		line_list = []
+		debug('Ray Yang search called')
+		self.skipped = []
+		self.inputs = []
+		self.duplicate = []
 		self.dialog.Results.clear()
 		query = self.dialog.Query.text()
+		# note that this is the Chinese "，" character which is different from "," in English.
+		words = [w.strip() for w in query.split("，")]
+		debug("words: {}, len: {}".format(str(words), len(words)))
+		if len(words) > 1:
+			self.batch_mode_search(words)
+			return
 
+		line_list = []
 		if self.dialog.Input_Type.currentText() == "Traditional":
 			#exact match
 			c.execute('SELECT * FROM dictionary WHERE hanzi_trad=?', (query,))
@@ -196,7 +237,44 @@ class start_main(QDialog):
 		self.dialog.Pinyin.adjustSize()
 		self.dialog.Hanzi.adjustSize()
 
+	def add_note(self, row):
+		col = mw.col
+		deck_name = self.dialog.Deck.currentText()
+		did = col.decks.id_for_name(deck_name)
+		note_type_name = self.dialog.Notetype.currentText()
+		m = col.models.byName(note_type_name)
+		col.models.setCurrent(m)
+		n = col.newNote()
+		traditional = row[0]
+		simplified = row[1]
+		pin_ying = row[2]
+		english = row[3]
+
+		n['Pinyin'] = pin_ying
+		simplified_field_name = "Simplified"
+		n[simplified_field_name] = simplified
+		n['English'] = english
+		n['Traditional'] = traditional
+		node_ids = col.find_notes("{}:{}".format(simplified_field_name, simplified))
+		if node_ids:
+			showInfo("The note with the question {} already exists".format(simplified))
+			self.duplicate.append(simplified)
+		else:
+			col.add_note(n, did)
+
+
+	def add_multiple_notes(self):
+		for row in self.inputs:
+			self.add_note(row)
+		added_count = len(self.inputs) - len(self.duplicate)
+		tooltip("Added {} notes, skipped: {}, duplicate: {}".format(
+			added_count, len(self.skipped), len(self.duplicate)))
+
 	def Add_Card(self):
+		if self.inputs:
+			self.add_multiple_notes()
+			return
+
 		to_add =  open(join(dirname(realpath(__file__)), 'to_add.txt'), "w", encoding="utf-8")
 		Hanzi = self.dialog.Hanzi.text()
 		Hanzi = Hanzi.split("\n")
