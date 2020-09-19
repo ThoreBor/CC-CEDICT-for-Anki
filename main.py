@@ -93,10 +93,10 @@ class start_main(QDialog):
 			self.dialog.Results.addItem(line)
 
 	def search_word(self, word):
-		debug("search word: {}".format(word))
+		# debug("search word: {}".format(word))
 		c.execute('SELECT * FROM dictionary WHERE hanzi_simp=?', (word,))
 		row = c.fetchone()
-		debug("row is {}".format(str(row)))
+		# debug("row is {}".format(str(row)))
 		if row:
 			traditional = row[0]
 			simplified = row[1]
@@ -110,7 +110,6 @@ class start_main(QDialog):
 			self.skipped.append(word)
 
 	def search(self):
-		debug('Ray Yang search called')
 		self.skipped = []
 		self.inputs = []
 		self.duplicate = []
@@ -118,7 +117,7 @@ class start_main(QDialog):
 		query = self.dialog.Query.text()
 		# note that this is the Chinese "，" character which is different from "," in English.
 		words = [w.strip() for w in query.split("，")]
-		debug("words: {}, len: {}".format(str(words), len(words)))
+		# debug("words: {}, len: {}".format(str(words), len(words)))
 		if len(words) > 1:
 			self.batch_mode_search(words)
 			return
