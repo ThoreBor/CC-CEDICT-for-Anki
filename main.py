@@ -101,7 +101,8 @@ class start_main(QDialog):
 			traditional = row[0]
 			simplified = row[1]
 			pin_ying = row[2]
-			english = row[3]
+			# the English part contains a new line.
+			english = row[3].rstrip("\n")
 			line = str(simplified + "\t" + traditional + "\t" + pin_ying + "\t" + english)
 			self.dialog.Results.addItem(line)
 			self.inputs.append(row)
@@ -261,7 +262,6 @@ class start_main(QDialog):
 			self.duplicate.append(simplified)
 		else:
 			col.add_note(n, did)
-
 
 	def add_multiple_notes(self):
 		for row in self.inputs:
