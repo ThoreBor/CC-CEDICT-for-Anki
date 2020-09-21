@@ -92,7 +92,7 @@ class start_main(QDialog):
 			self.search_word(w)
 		if self.skipped:
 			line = "Can't find {} words: {}".format(len(self.skipped), ",".join(self.skipped))
-			self.dialog.Results.addItem(line)
+			showInfo(line)
 
 	def search_word(self, word):
 		# debug("search word: {}".format(word))
