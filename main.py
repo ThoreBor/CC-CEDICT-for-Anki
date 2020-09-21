@@ -31,6 +31,7 @@ class start_main(QDialog):
 		self.inputs = []
 		self.skipped = []
 		self.duplicate = []
+		self.batch_search_mode = False
 
 	def setupUI(self):
 
@@ -86,6 +87,7 @@ class start_main(QDialog):
 			self.dialog.Results.addItem(line)
 
 	def batch_mode_search(self, words):
+		self.batch_search_mode = True
 		for w in words:
 			self.search_word(w)
 		if self.skipped:
@@ -113,6 +115,7 @@ class start_main(QDialog):
 		self.skipped = []
 		self.inputs = []
 		self.duplicate = []
+		self.batch_search_mode = False
 		self.dialog.Results.clear()
 		query = self.dialog.Query.text()
 		# note that this is the Chinese "，" character which is different from "," in English.
@@ -270,8 +273,9 @@ class start_main(QDialog):
 			added_count, len(self.skipped), len(self.duplicate)))
 
 	def Add_Card(self):
-		if self.inputs:
-			self.add_multiple_notes()
+		if self.batch_search_mode:
+			if self.inputs:
+				self.add_multiple_notes()
 			return
 
 		to_add =  open(join(dirname(realpath(__file__)), 'to_add.txt'), "w", encoding="utf-8")
