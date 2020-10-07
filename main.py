@@ -47,8 +47,10 @@ class start_main(QDialog):
 		# Connect buttons
 		self.dialog.About.clicked.connect(self.about)
 		self.dialog.Add.clicked.connect(self.Add_Card)
-		self.dialog.Results.itemClicked.connect(self.listwidgetclicked)
+		self.dialog.Results.doubleClicked.connect(self.tablewidgetclicked)
 		self.dialog.SearchButton.clicked.connect(self.search)
+		self.dialog.Query.returnPressed.connect(self.search)
+		self.dialog.checkBox.stateChanged.connect(self.search)
 		self.dialog.Field1.currentTextChanged.connect(self.save_config)
 		self.dialog.Field2.currentTextChanged.connect(self.save_config)
 		self.dialog.Field3.currentTextChanged.connect(self.save_config)
@@ -67,66 +69,103 @@ class start_main(QDialog):
 		self.dialog.Field4.setCurrentText(config["field_4_config"])
 
 		# Show 20 random entries
-		c.execute('SELECT * FROM dictionary ORDER BY RANDOM() LIMIT 20')
+		c.execute('SELECT * FROM dictionary ORDER BY RANDOM() LIMIT 10')
 		for row in c.fetchall():
 			traditional = row[0]
 			simplified = row[1]
 			p = row[2]
 			english = row[3]
 			english = english[:-3]
-			line = str(simplified + "\t" + traditional + "\t" + p + "\t" + english)
-			self.dialog.Results.addItem(line)
+			result = [simplified, traditional, p, english]
+			self.add_result(result)
+			
+	def add_result(self, result):
+		rowPosition = self.dialog.Results.rowCount()
+		self.dialog.Results.setColumnCount(4)
+		self.dialog.Results.insertRow(rowPosition)
+		self.dialog.Results.setItem(rowPosition , 0, QtWidgets.QTableWidgetItem(str(result[0])))
+		self.dialog.Results.setItem(rowPosition , 1, QtWidgets.QTableWidgetItem(str(result[1])))
+		self.dialog.Results.setItem(rowPosition , 2, QtWidgets.QTableWidgetItem(str(result[2])))
+		self.dialog.Results.setItem(rowPosition , 3, QtWidgets.QTableWidgetItem(str(result[3])))
+		#self.dialog.Results.resizeColumnsToContents()
 
 	def search(self):
 		line_list = []
-		self.dialog.Results.clear()
+		self.dialog.Results.setRowCount(0)
 		query = self.dialog.Query.text()
 
 		if self.dialog.Input_Type.currentText() == "Traditional":
-			#exact match
-			c.execute('SELECT * FROM dictionary WHERE hanzi_trad=?', (query,))
-			for row in c.fetchall():
-				traditional = row[0]
-				simplified = row[1]
-				p = row[2]
-				english = row[3]
-				english = english[:-3]
-				line = str(simplified + "\t" + traditional + "\t" + p + "\t" + english)
-				line_list.append(line)
-				self.dialog.Results.addItem(line)
-			#partial match
-			c.execute('SELECT * FROM dictionary WHERE hanzi_trad Like ?',('%{}%'.format(query),))
-			if self.dialog.checkBox.isChecked():
-				pass
-			else:
+			#batch search
+			if "/" in query:
+				query = query.split("/")
+				for i in query:
+					c.execute('SELECT * FROM dictionary WHERE hanzi_trad=?', (i,))
+					for row in c.fetchall():
+						traditional = row[0]
+						simplified = row[1]
+						p = row[2]
+						english = row[3]
+						english = english[:-3]
+						result = [simplified, traditional, p, english]
+						line_list.append(result)
+						self.add_result(result)
+
+			if self.dialog.checkBox.isChecked() and "/" not in query:
+				#exact match
+				c.execute('SELECT * FROM dictionary WHERE hanzi_trad=?', (query,))
 				for row in c.fetchall():
 					traditional = row[0]
 					simplified = row[1]
 					p = row[2]
 					english = row[3]
 					english = english[:-3]
-					line = str(simplified + "\t" + traditional + "\t" + p + "\t" + english)
-					if line not in line_list:
-						self.dialog.Results.addItem(line)
+					result = [simplified, traditional, p, english]
+					line_list.append(result)
+					self.add_result(result)
+			else:
+				#partial match
+				c.execute('SELECT * FROM dictionary WHERE hanzi_trad Like ?',('%{}%'.format(query),))
+				for row in c.fetchall():
+					traditional = row[0]
+					simplified = row[1]
+					p = row[2]
+					english = row[3]
+					english = english[:-3]
+					result = [simplified, traditional, p, english]
+					if result not in line_list:
+						self.add_result(result)
 
 		if self.dialog.Input_Type.currentText() == "Simplified":
-			#exact match
-			c.execute('SELECT * FROM dictionary WHERE hanzi_simp=?', (query,))
-			for row in c.fetchall():
-				traditional = row[0]
-				simplified = row[1]
-				p = row[2]
-				english = row[3]
-				english = english[:-3]
-				line = str(simplified + "\t" + traditional + "\t" + p + "\t" + english)
-				line_list.append(line)
-				self.dialog.Results.addItem(line)
+			#batch search
+			if "/" in query:
+				query = query.split("/")
+				for i in query:
+					c.execute('SELECT * FROM dictionary WHERE hanzi_simp=?', (i,))
+					for row in c.fetchall():
+						traditional = row[0]
+						simplified = row[1]
+						p = row[2]
+						english = row[3]
+						english = english[:-3]
+						result = [simplified, traditional, p, english]
+						line_list.append(result)
+						self.add_result(result)
 
-			#partial
-			c.execute('SELECT * FROM dictionary WHERE hanzi_simp Like ?',('%{}%'.format(query),))
 			if self.dialog.checkBox.isChecked():
-				pass
+				#exact match
+				c.execute('SELECT * FROM dictionary WHERE hanzi_simp=?', (query,))
+				for row in c.fetchall():
+					traditional = row[0]
+					simplified = row[1]
+					p = row[2]
+					english = row[3]
+					english = english[:-3]
+					result = [simplified, traditional, p, english]
+					line_list.append(result)
+					self.add_result(result)
 			else:
+				#partial
+				c.execute('SELECT * FROM dictionary WHERE hanzi_simp Like ?',('%{}%'.format(query),))
 				for row in c.fetchall():
 					traditional = row[0]
 					simplified = row[1]
@@ -134,36 +173,50 @@ class start_main(QDialog):
 					english = row[3]
 					english = english[:-3]
 					line = str(simplified + "\t" + traditional + "\t" + p + "\t" + english)
-					if line not in line_list:
-						self.dialog.Results.addItem(line)
+					result = [simplified, traditional, p, english]
+					if result not in line_list:
+						self.add_result(result)
 
 		if self.dialog.Input_Type.currentText() == "English":
-			c.execute('SELECT * FROM dictionary WHERE eng=?', (query,))
-			for row in c.fetchall():
-				traditional = row[0]
-				simplified = row[1]
-				p = row[2]
-				english = row[3]
-				english = english[:-3]
-				line = str(simplified + "\t" + traditional + "\t" + p + "\t" + english)
-				line_list.append(line)
-				self.dialog.Results.addItem(line)
-			c.execute('SELECT * FROM dictionary WHERE eng Like ?',('%{}%'.format(query),))
-			for row in c.fetchall():
-				traditional = row[0]
-				simplified = row[1]
-				p = row[2]
-				english = row[3]
-				english = english[:-3]
-				english_list = english.split(",")
-				line = str(simplified + "\t" + traditional + "\t" + p + "\t" + english)
-				if query in english_list:
-					if line not in line_list:
-						self.dialog.Results.addItem(line)
+			#batch search
+			if "/" in query:
+				query = query.split("/")
+				for i in query:
+					c.execute('SELECT * FROM dictionary WHERE eng=?', (i,))
+					for row in c.fetchall():
+						traditional = row[0]
+						simplified = row[1]
+						p = row[2]
+						english = row[3]
+						english = english[:-3]
+						result = [simplified, traditional, p, english]
+						line_list.append(result)
+						self.add_result(result)
+					c.execute('SELECT * FROM dictionary WHERE eng Like ?',('%{}%'.format(i),))
+					for row in c.fetchall():
+						traditional = row[0]
+						simplified = row[1]
+						p = row[2]
+						english = row[3]
+						english = english[:-3]
+						english_list = english.split(",")
+						result = [simplified, traditional, p, english]
+						if i in english_list:
+							if result not in line_list:
+								self.add_result(result)
 
 			if self.dialog.checkBox.isChecked():
-				pass
-			else:
+				#exact match
+				c.execute('SELECT * FROM dictionary WHERE eng=?', (query,))
+				for row in c.fetchall():
+					traditional = row[0]
+					simplified = row[1]
+					p = row[2]
+					english = row[3]
+					english = english[:-3]
+					result = [simplified, traditional, p, english]
+					line_list.append(result)
+					self.add_result(result)
 				c.execute('SELECT * FROM dictionary WHERE eng Like ?',('%{}%'.format(query),))
 				for row in c.fetchall():
 					traditional = row[0]
@@ -171,17 +224,31 @@ class start_main(QDialog):
 					p = row[2]
 					english = row[3]
 					english = english[:-3]
-					line = str(simplified + "\t" + traditional + "\t" + p + "\t" + english)	
-					if line not in line_list:
-						self.dialog.Results.addItem(line)
+					english_list = english.split(",")
+					result = [simplified, traditional, p, english]
+					if query in english_list:
+						if result not in line_list:
+							self.add_result(result)
+			else:
+				#partial
+				c.execute('SELECT * FROM dictionary WHERE eng Like ?',('%{}%'.format(query),))
+				for row in c.fetchall():
+					traditional = row[0]
+					simplified = row[1]
+					p = row[2]
+					english = row[3]
+					english = english[:-3]
+					result = [simplified, traditional, p, english]
+					if result not in line_list:
+						self.add_result(result)
 
-	def listwidgetclicked(self, item):
-		data = item.text()
-		data = data.split("\t")
-		simp = data[0]
-		trad = data[1]
-		pinyin = data[2]
-		english = data[3]
+	def tablewidgetclicked(self):
+		for idx in self.dialog.Results.selectionModel().selectedIndexes():
+			row = idx.row()
+		simp = self.dialog.Results.item(row, 0).text()
+		trad = self.dialog.Results.item(row, 1).text()	
+		pinyin = self.dialog.Results.item(row, 2).text()	
+		english = self.dialog.Results.item(row, 3).text()	
 		english = english.split(", ")
 		english_entry = ""
 		for i in english:
