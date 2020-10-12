@@ -10,6 +10,8 @@ from aqt.utils import showInfo, tooltip
 from .forms import dict_ui
 from .import_file import importfile
 
+import re
+
 # Connect to dictionary database
 db_path = join(dirname(realpath(__file__)), 'CC-CEDICT_dictionary.db')
 conn = connect(db_path)
@@ -183,7 +185,7 @@ class start_main(QDialog):
 		self.duplicate = []
 		self.batch_search_mode = False
 		# note that this is the Chinese "，" character which is different from "," in English.
-		words = [w.strip() for w in query.split("，")]
+		words = [w.strip() for w in re.split(r'[，,#%&$/]', query)]
 		# debug("words: {}, len: {}".format(str(words), len(words)))
 		if len(words) > 1:
 			self.batch_mode_search(words)
