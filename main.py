@@ -236,8 +236,8 @@ class start_main(QDialog):
 		m = col.models.byName(note_type_name)
 		col.models.setCurrent(m)
 		n = col.newNote()
-		traditional = row[0]
-		simplified = row[1]
+		simplified = row[0]
+		traditional = row[1]
 		pinyin = row[2]
 		english = row[3]
 
@@ -255,7 +255,6 @@ class start_main(QDialog):
 			note_ids = col.find_notes("{}:{}".format(traditional_field_name, traditional))
 		if self.dialog.Input_Type.currentText() == "English":
 			note_ids = col.find_notes("{}:{}".format(english_field_name, english))
-
 
 		if note_ids:
 			newline = "\n"
@@ -285,7 +284,7 @@ class start_main(QDialog):
 				simp = Hanzi[0]
 			pinyin = self.dialog.Pinyin.text()
 			english = self.dialog.English.text()
-			self.add_note([trad, simp, pinyin, english])
+			self.add_note([simp, trad, pinyin, english])
 
 		if [simp, trad, pinyin, english] not in self.duplicate:
 			tooltip("Added 1 note")
