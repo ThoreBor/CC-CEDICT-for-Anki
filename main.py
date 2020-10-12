@@ -55,7 +55,7 @@ class start_main(QDialog):
 
 		# Connect buttons
 		self.dialog.About.clicked.connect(self.about)
-		self.dialog.Add.clicked.connect(self.Add_Card)
+		self.dialog.Add.clicked.connect(self.init_add)
 		self.dialog.Results.doubleClicked.connect(self.tablewidgetclicked)
 		self.dialog.SearchButton.clicked.connect(self.search)
 		self.dialog.Query.returnPressed.connect(self.search)
@@ -77,7 +77,17 @@ class start_main(QDialog):
 		self.dialog.Field3.setCurrentText(config["field_3_config"])
 		self.dialog.Field4.setCurrentText(config["field_4_config"])
 
-		# Show 20 random entries
+		# Align header
+		item = self.dialog.Results.horizontalHeaderItem(0)
+		item.setTextAlignment(Qt.AlignLeft)
+		item = self.dialog.Results.horizontalHeaderItem(1)
+		item.setTextAlignment(Qt.AlignLeft)
+		item = self.dialog.Results.horizontalHeaderItem(2)
+		item.setTextAlignment(Qt.AlignLeft)
+		item = self.dialog.Results.horizontalHeaderItem(3)
+		item.setTextAlignment(Qt.AlignLeft)
+
+		# Show 10 random entries
 		c.execute('SELECT * FROM dictionary ORDER BY RANDOM() LIMIT 10')
 		for row in c.fetchall():
 			traditional = row[0]
@@ -90,46 +100,88 @@ class start_main(QDialog):
 
 	def add_result(self, result):
 		rowPosition = self.dialog.Results.rowCount()
-		self.dialog.Results.setColumnCount(4)
 		self.dialog.Results.insertRow(rowPosition)
-		self.dialog.Results.setItem(rowPosition , 0, QtWidgets.QTableWidgetItem(str(result[0])))
-		self.dialog.Results.setItem(rowPosition , 1, QtWidgets.QTableWidgetItem(str(result[1])))
-		self.dialog.Results.setItem(rowPosition , 2, QtWidgets.QTableWidgetItem(str(result[2])))
-		self.dialog.Results.setItem(rowPosition , 3, QtWidgets.QTableWidgetItem(str(result[3])))
-		#self.dialog.Results.resizeColumnsToContents()
+		self.dialog.Results.setItem(rowPosition, 0, QtWidgets.QTableWidgetItem(str(result[0])))
+		self.dialog.Results.setItem(rowPosition, 1, QtWidgets.QTableWidgetItem(str(result[1])))
+		self.dialog.Results.setItem(rowPosition, 2, QtWidgets.QTableWidgetItem(str(result[2])))
+		self.dialog.Results.setItem(rowPosition, 3, QtWidgets.QTableWidgetItem(str(result[3]).rstrip(", ")))
+
+		font = QtGui.QFont()
+		font.setFamily("SimHei")
+		font.setPointSize(10)
+		self.dialog.Results.item(rowPosition, 0).setFont(font)
+		self.dialog.Results.item(rowPosition, 1).setFont(font)
+		font.setFamily("Arial")
+		font.setPointSize(8)
+		self.dialog.Results.item(rowPosition, 2).setFont(font)
+		self.dialog.Results.item(rowPosition, 3).setFont(font)
+		self.dialog.Results.resizeColumnsToContents()
 
 	def batch_mode_search(self, words):
 		self.batch_search_mode = True
 		for w in words:
-			self.search_word(w)
+			if self.dialog.Input_Type.currentText() == "Traditional":
+				self.exact_match(w, "hanzi_trad")
+			if self.dialog.Input_Type.currentText() == "Simplified":
+				self.exact_match(w, "hanzi_simp")
+			if self.dialog.Input_Type.currentText() == "English":
+				self.exact_match(w, "eng")
+
 		if self.skipped:
 			line = "Can't find {} words: {}".format(len(self.skipped), ",".join(self.skipped))
 			showInfo(line)
 
-	def search_word(self, word):
-		# debug("search word: {}".format(word))
-		c.execute('SELECT * FROM dictionary WHERE hanzi_simp=?', (word,))
+	def exact_match(self, word, input_type):
+		c.execute("SELECT * FROM dictionary WHERE (%s) = (?)" % (input_type), (word,))
 		row = c.fetchone()
-		# debug("row is {}".format(str(row)))
 		if row:
 			traditional = row[0]
 			simplified = row[1]
-			pin_ying = row[2]
+			pinyin = row[2]
 			# the English part contains a new line.
 			english = row[3].rstrip("\n")
-			self.add_result([simplified, traditional, pin_ying, english])
-			self.inputs.append(row)
+			self.add_result([simplified, traditional, pinyin, english])
+			self.inputs.append([simplified, traditional, pinyin, english])
 		else:
-			self.skipped.append(word)
+			if input_type != "eng":
+				self.skipped.append(word)
 
+		if input_type == "eng":
+			c.execute('SELECT * FROM dictionary WHERE eng Like ?',('%{}%'.format(word),))
+			for row in c.fetchall():
+				traditional = row[0]
+				simplified = row[1]
+				pinyin = row[2]
+				english = row[3]
+				english = english[:-3]
+				english_list = english.split(",")
+				if word in english_list and [simplified, traditional, pinyin, english] not in self.inputs:
+					self.add_result([simplified, traditional, pinyin, english])
+					self.inputs.append([simplified, traditional, pinyin, english])
+			if not row:
+				self.skipped.append(word)
+
+	def partial_match(self, word, input_type):
+		c.execute("SELECT * FROM dictionary WHERE (%s) Like ?" % (input_type), ('%{}%'.format(word),))
+		for row in c.fetchall():
+			traditional = row[0]
+			simplified = row[1]
+			pinyin = row[2]
+			# the English part contains a new line.
+			english = row[3].rstrip("\n")
+			if [simplified, traditional, pinyin, english] not in self.inputs:
+				self.add_result([simplified, traditional, pinyin, english])
+				self.inputs.append([simplified, traditional, pinyin, english])
+		
 	def search(self):
+		query = self.dialog.Query.text()
+		if not query:
+			return
 		self.dialog.Results.setRowCount(0)
 		self.skipped = []
 		self.inputs = []
 		self.duplicate = []
 		self.batch_search_mode = False
-		self.dialog.Results.clear()
-		query = self.dialog.Query.text()
 		# note that this is the Chinese "，" character which is different from "," in English.
 		words = [w.strip() for w in query.split("，")]
 		# debug("words: {}, len: {}".format(str(words), len(words)))
@@ -137,154 +189,23 @@ class start_main(QDialog):
 			self.batch_mode_search(words)
 			return
 
-		line_list = []
 		if self.dialog.Input_Type.currentText() == "Traditional":
-			#batch search
-			if "/" in query:
-				query = query.split("/")
-				for i in query:
-					c.execute('SELECT * FROM dictionary WHERE hanzi_trad=?', (i,))
-					for row in c.fetchall():
-						traditional = row[0]
-						simplified = row[1]
-						p = row[2]
-						english = row[3]
-						english = english[:-3]
-						result = [simplified, traditional, p, english]
-						line_list.append(result)
-						self.add_result(result)
-
-			if self.dialog.checkBox.isChecked() and "/" not in query:
-				#exact match
-				c.execute('SELECT * FROM dictionary WHERE hanzi_trad=?', (query,))
-				for row in c.fetchall():
-					traditional = row[0]
-					simplified = row[1]
-					p = row[2]
-					english = row[3]
-					english = english[:-3]
-					result = [simplified, traditional, p, english]
-					line_list.append(result)
-					self.add_result(result)
+			if self.dialog.checkBox.isChecked():
+				self.exact_match(query, "hanzi_trad")
 			else:
-				#partial match
-				c.execute('SELECT * FROM dictionary WHERE hanzi_trad Like ?',('%{}%'.format(query),))
-				for row in c.fetchall():
-					traditional = row[0]
-					simplified = row[1]
-					p = row[2]
-					english = row[3]
-					english = english[:-3]
-					result = [simplified, traditional, p, english]
-					if result not in line_list:
-						self.add_result(result)
+				self.partial_match(query, "hanzi_trad")
 
 		if self.dialog.Input_Type.currentText() == "Simplified":
-			#batch search
-			if "/" in query:
-				query = query.split("/")
-				for i in query:
-					c.execute('SELECT * FROM dictionary WHERE hanzi_simp=?', (i,))
-					for row in c.fetchall():
-						traditional = row[0]
-						simplified = row[1]
-						p = row[2]
-						english = row[3]
-						english = english[:-3]
-						result = [simplified, traditional, p, english]
-						line_list.append(result)
-						self.add_result(result)
-
 			if self.dialog.checkBox.isChecked():
-				#exact match
-				c.execute('SELECT * FROM dictionary WHERE hanzi_simp=?', (query,))
-				for row in c.fetchall():
-					traditional = row[0]
-					simplified = row[1]
-					p = row[2]
-					english = row[3]
-					english = english[:-3]
-					result = [simplified, traditional, p, english]
-					line_list.append(result)
-					self.add_result(result)
+				self.exact_match(query, "hanzi_simp")
 			else:
-				#partial
-				c.execute('SELECT * FROM dictionary WHERE hanzi_simp Like ?',('%{}%'.format(query),))
-				for row in c.fetchall():
-					traditional = row[0]
-					simplified = row[1]
-					p = row[2]
-					english = row[3]
-					english = english[:-3]
-					line = str(simplified + "\t" + traditional + "\t" + p + "\t" + english)
-					result = [simplified, traditional, p, english]
-					if result not in line_list:
-						self.add_result(result)
+				self.partial_match(query, "hanzi_simp")
 
 		if self.dialog.Input_Type.currentText() == "English":
-			#batch search
-			if "/" in query:
-				query = query.split("/")
-				for i in query:
-					c.execute('SELECT * FROM dictionary WHERE eng=?', (i,))
-					for row in c.fetchall():
-						traditional = row[0]
-						simplified = row[1]
-						p = row[2]
-						english = row[3]
-						english = english[:-3]
-						result = [simplified, traditional, p, english]
-						line_list.append(result)
-						self.add_result(result)
-					c.execute('SELECT * FROM dictionary WHERE eng Like ?',('%{}%'.format(i),))
-					for row in c.fetchall():
-						traditional = row[0]
-						simplified = row[1]
-						p = row[2]
-						english = row[3]
-						english = english[:-3]
-						english_list = english.split(",")
-						result = [simplified, traditional, p, english]
-						if i in english_list:
-							if result not in line_list:
-								self.add_result(result)
-
 			if self.dialog.checkBox.isChecked():
-				#exact match
-				c.execute('SELECT * FROM dictionary WHERE eng=?', (query,))
-				for row in c.fetchall():
-					traditional = row[0]
-					simplified = row[1]
-					p = row[2]
-					english = row[3]
-					english = english[:-3]
-					result = [simplified, traditional, p, english]
-					line_list.append(result)
-					self.add_result(result)
-				c.execute('SELECT * FROM dictionary WHERE eng Like ?',('%{}%'.format(query),))
-				for row in c.fetchall():
-					traditional = row[0]
-					simplified = row[1]
-					p = row[2]
-					english = row[3]
-					english = english[:-3]
-					english_list = english.split(",")
-					result = [simplified, traditional, p, english]
-					if query in english_list:
-						if result not in line_list:
-							self.add_result(result)
+				self.exact_match(query, "eng")
 			else:
-				#partial
-				c.execute('SELECT * FROM dictionary WHERE eng Like ?',('%{}%'.format(query),))
-				for row in c.fetchall():
-					traditional = row[0]
-					simplified = row[1]
-					p = row[2]
-					english = row[3]
-					english = english[:-3]
-					result = [simplified, traditional, p, english]
-					if result not in line_list:
-						self.add_result(result)
+				self.partial_match(query, "eng")
 
 	def tablewidgetclicked(self):
 		for idx in self.dialog.Results.selectionModel().selectedIndexes():
@@ -296,9 +217,9 @@ class start_main(QDialog):
 		english = english.split(", ")
 		english_entry = ""
 		for i in english:
-			english_entry = english_entry + i + "\n"
+			english_entry = f"{english_entry}{i}\n"
 		if trad != simp:
-			self.dialog.Hanzi.setText(trad+"\n"+simp)
+			self.dialog.Hanzi.setText(f"{trad}\n{simp}")
 		else:
 			self.dialog.Hanzi.setText(trad)
 		self.dialog.Pinyin.setText(pinyin)
@@ -317,18 +238,29 @@ class start_main(QDialog):
 		n = col.newNote()
 		traditional = row[0]
 		simplified = row[1]
-		pin_ying = row[2]
+		pinyin = row[2]
 		english = row[3]
 
-		n['Pinyin'] = pin_ying
+		n['Pinyin'] = pinyin
 		simplified_field_name = "Simplified"
 		n[simplified_field_name] = simplified
-		n['English'] = english
-		n['Traditional'] = traditional
-		node_ids = col.find_notes("{}:{}".format(simplified_field_name, simplified))
-		if node_ids:
-			showInfo("The note with the question {} already exists".format(simplified))
-			self.duplicate.append(simplified)
+		traditional_field_name = "Traditional"
+		n[traditional_field_name] = traditional
+		english_field_name = "English"
+		n[english_field_name] = english
+
+		if self.dialog.Input_Type.currentText() == "Simplified":
+			note_ids = col.find_notes("{}:{}".format(simplified_field_name, simplified))
+		if self.dialog.Input_Type.currentText() == "Traditional":
+			note_ids = col.find_notes("{}:{}".format(traditional_field_name, traditional))
+		if self.dialog.Input_Type.currentText() == "English":
+			note_ids = col.find_notes("{}:{}".format(english_field_name, english))
+
+
+		if note_ids:
+			newline = "\n"
+			showInfo(f"This note already exists:\n{simplified} \t {traditional} \t {pinyin} \t {english.replace(newline, ' ')}")
+			self.duplicate.append([simplified, traditional, pinyin, english])
 		else:
 			col.add_note(n, did)
 
@@ -336,71 +268,27 @@ class start_main(QDialog):
 		for row in self.inputs:
 			self.add_note(row)
 		added_count = len(self.inputs) - len(self.duplicate)
-		tooltip("Added {} notes, skipped: {}, duplicate: {}".format(
-			added_count, len(self.skipped), len(self.duplicate)))
+		tooltip("Added {} notes, skipped: {}, duplicate: {}".format(added_count, len(self.skipped), len(self.duplicate)))
 
-	def Add_Card(self):
+	def init_add(self):
 		if self.batch_search_mode:
 			if self.inputs:
 				self.add_multiple_notes()
 			return
-
-		to_add =  open(join(dirname(realpath(__file__)), 'to_add.txt'), "w", encoding="utf-8")
-		Hanzi = self.dialog.Hanzi.text()
-		Hanzi = Hanzi.split("\n")
-		if len(Hanzi) > 1:
-			trad = Hanzi[0]
-			simp = Hanzi[1]
 		else:
-			trad = Hanzi[0]
-			simp = Hanzi[0]
-		Pinyin = self.dialog.Pinyin.text()
-		English = self.dialog.English.text()
-		
-		if self.dialog.Field1.currentText() == "Simplified":
-			Field1_content = simp
-		if self.dialog.Field1.currentText() == "Traditional":
-			Field1_content = trad
-		if self.dialog.Field1.currentText() == "Pinyin":
-			Field1_content = Pinyin
-		if self.dialog.Field1.currentText() == "English":
-			Field1_content = English
+			Hanzi = self.dialog.Hanzi.text().split("\n")
+			if len(Hanzi) > 1:
+				trad = Hanzi[0]
+				simp = Hanzi[1]
+			else:
+				trad = Hanzi[0]
+				simp = Hanzi[0]
+			pinyin = self.dialog.Pinyin.text()
+			english = self.dialog.English.text()
+			self.add_note([trad, simp, pinyin, english])
 
-		if self.dialog.Field2.currentText() == "Simplified":
-			Field2_content = simp
-		if self.dialog.Field2.currentText() == "Traditional":
-			Field2_content = trad
-		if self.dialog.Field2.currentText() == "Pinyin":
-			Field2_content = Pinyin
-		if self.dialog.Field2.currentText() == "English":
-			Field2_content = English
-
-		if self.dialog.Field3.currentText() == "Simplified":
-			Field3_content = simp
-		if self.dialog.Field3.currentText() == "Traditional":
-			Field3_content = trad
-		if self.dialog.Field3.currentText() == "Pinyin":
-			Field3_content = Pinyin
-		if self.dialog.Field3.currentText() == "English":
-			Field3_content = English
-		if self.dialog.Field3.currentText() == "Nothing":
-			Field3_content = ""
-
-		if self.dialog.Field4.currentText() == "Simplified":
-			Field4_content = simp
-		if self.dialog.Field4.currentText() == "Traditional":
-			Field4_content = trad
-		if self.dialog.Field4.currentText() == "Pinyin":
-			Field4_content = Pinyin
-		if self.dialog.Field4.currentText() == "English":
-			Field4_content = English
-		if self.dialog.Field4.currentText() == "Nothing":
-			Field4_content = ""
-
-		Card = str(Field1_content + "\t" + Field2_content + "\t" + Field3_content + "\t" + Field4_content)
-		to_add.write(Card)
-		to_add.close()
-		importfile(self.dialog.Deck.currentText(), self.dialog.Notetype.currentText())
+		if [simp, trad, pinyin, english] not in self.duplicate:
+			tooltip("Added 1 note")
 
 	def save_config(self):
 		search_config = self.dialog.Input_Type.currentText()
