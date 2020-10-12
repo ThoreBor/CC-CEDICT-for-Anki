@@ -314,6 +314,9 @@
        <property name="text">
         <string>Search</string>
        </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
      <item row="0" column="0">
@@ -326,8 +329,8 @@
        </property>
        <property name="font">
         <font>
-         <family>KaiTi</family>
-         <pointsize>8</pointsize>
+         <family>SimHei</family>
+         <pointsize>10</pointsize>
         </font>
        </property>
       </widget>
@@ -377,20 +380,52 @@
         <property name="text">
          <string>Simplified</string>
         </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
        </column>
        <column>
         <property name="text">
          <string>Traditional</string>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
         </property>
        </column>
        <column>
         <property name="text">
          <string>Pinyin</string>
         </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
        </column>
        <column>
         <property name="text">
          <string>English</string>
+        </property>
+        <property name="font">
+         <font>
+          <family>Arial</family>
+          <pointsize>10</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
         </property>
        </column>
       </widget>
