@@ -43,7 +43,7 @@
         <widget class="QLabel" name="Hanzi">
          <property name="font">
           <font>
-           <family>KaiTi</family>
+           <family>SimHei</family>
            <pointsize>20</pointsize>
           </font>
          </property>
@@ -117,136 +117,42 @@
         <item row="2" column="0">
          <widget class="QLabel" name="Field1_Label">
           <property name="text">
-           <string>Field 1:</string>
+           <string>Simplified field:</string>
           </property>
          </widget>
         </item>
         <item row="2" column="1">
          <widget class="QLabel" name="Field2_Label">
           <property name="text">
-           <string>Field 2:</string>
+           <string>Traditional field:</string>
           </property>
          </widget>
         </item>
         <item row="2" column="2">
          <widget class="QLabel" name="Field3_Label">
           <property name="text">
-           <string>Field 3:</string>
+           <string>Pinyin field:</string>
           </property>
          </widget>
         </item>
         <item row="2" column="3">
          <widget class="QLabel" name="Field4_Label">
           <property name="text">
-           <string>Field 4:</string>
+           <string>English field:</string>
           </property>
          </widget>
         </item>
         <item row="3" column="0">
-         <widget class="QComboBox" name="Field1">
-          <item>
-           <property name="text">
-            <string>Simplified</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Traditional</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Pinyin</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>English</string>
-           </property>
-          </item>
-         </widget>
+         <widget class="QComboBox" name="Field1"/>
         </item>
         <item row="3" column="1">
-         <widget class="QComboBox" name="Field2">
-          <item>
-           <property name="text">
-            <string>Traditional</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Simplified</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Pinyin</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>English</string>
-           </property>
-          </item>
-         </widget>
+         <widget class="QComboBox" name="Field2"/>
         </item>
         <item row="3" column="2">
-         <widget class="QComboBox" name="Field3">
-          <item>
-           <property name="text">
-            <string>Pinyin</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Simplified</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Traditional</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>English</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Nothing</string>
-           </property>
-          </item>
-         </widget>
+         <widget class="QComboBox" name="Field3"/>
         </item>
         <item row="3" column="3">
-         <widget class="QComboBox" name="Field4">
-          <item>
-           <property name="text">
-            <string>English</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Simplified</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Traditional</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Pinyin</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Nothing</string>
-           </property>
-          </item>
-         </widget>
+         <widget class="QComboBox" name="Field4"/>
         </item>
         <item row="4" column="3">
          <widget class="QPushButton" name="About">
