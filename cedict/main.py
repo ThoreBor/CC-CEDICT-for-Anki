@@ -1,14 +1,12 @@
+import re
+from os.path import dirname, join, realpath
+from sqlite3 import connect
 from typing import List
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from sqlite3 import connect
-from os.path import dirname, join, realpath
-
+from PyQt5 import QtGui, QtWidgets
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo, tooltip
-
-import re
 
 # Connect to dictionary database
 db_path = join(dirname(realpath(__file__)), '../CC-CEDICT_dictionary.db')
