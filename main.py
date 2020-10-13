@@ -1,3 +1,5 @@
+from typing import List
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from sqlite3 import connect
 from os.path import dirname, join, realpath
@@ -8,7 +10,6 @@ from aqt.utils import showInfo, tooltip
 
 
 from .forms import dict_ui
-from .import_file import importfile
 
 import re
 
@@ -20,6 +21,17 @@ c = conn.cursor()
 
 def debug(s):
 	sys.stdout.write(s + "\n")
+
+
+def split_string(s: str) -> List[str]:
+	"""
+	Split a string using one of the supported separator characters.
+	Each element is then stripped of leading the trailing spaces.
+
+	:param s: a string
+	:return:
+	"""
+	return [w.strip() for w in re.split(r'[，,#%&$/]', s)]
 
 
 class start_main(QDialog):
@@ -184,8 +196,7 @@ class start_main(QDialog):
 		self.inputs = []
 		self.duplicate = []
 		self.batch_search_mode = False
-		# note that this is the Chinese "，" character which is different from "," in English.
-		words = [w.strip() for w in re.split(r'[，,#%&$/]', query)]
+		words = split_string(query)
 		# debug("words: {}, len: {}".format(str(words), len(words)))
 		if len(words) > 1:
 			self.batch_mode_search(words)
