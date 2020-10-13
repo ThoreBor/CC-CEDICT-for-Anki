@@ -1,4 +1,4 @@
-from main import split_string
+from cedict.main import split_string
 
 
 def test_split_string():

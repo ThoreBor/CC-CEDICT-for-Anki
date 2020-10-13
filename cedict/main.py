@@ -8,18 +8,17 @@ from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo, tooltip
 
-
-from .forms import dict_ui
-
 import re
 
 # Connect to dictionary database
-db_path = join(dirname(realpath(__file__)), 'CC-CEDICT_dictionary.db')
+db_path = join(dirname(realpath(__file__)), '../CC-CEDICT_dictionary.db')
 conn = connect(db_path)
 c = conn.cursor()
 
+
 def debug(s):
 	sys.stdout.write(s + "\n")
+
 
 def split_string(s: str) -> List[str]:
 	"""
@@ -34,10 +33,10 @@ def split_string(s: str) -> List[str]:
 
 class start_main(QDialog):
 
-	def __init__(self, parent=None):
+	def __init__(self, dialog, parent=None):
 		self.parent = parent
 		QDialog.__init__(self, parent, Qt.Window)
-		self.dialog = dict_ui.Ui_Dialog()
+		self.dialog = dialog
 		self.dialog.setupUi(self)
 		self.setupUI()
 		self.inputs = []

@@ -1,13 +1,15 @@
 from aqt import mw
-from PyQt5.QtWidgets import QAction, QMenu
-from aqt.qt import *
-from .main import start_main
+from aqt.qt import QAction, QKeySequence
+from .cedict.main import start_main
+from .forms import dict_ui
+
 
 def open_dict():
-	mw.dict = start_main()
+	mw.dict = start_main(dict_ui.Ui_Dialog())
 	mw.dict.show()
 	mw.dict.raise_()
 	mw.dict.activateWindow()
+
 
 action = QAction("CC-CEDICT for Anki", mw)
 action.triggered.connect(open_dict)
