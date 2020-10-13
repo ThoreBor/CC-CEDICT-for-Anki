@@ -248,7 +248,9 @@ class start_main(QDialog):
 		note_type_name = self.dialog.Notetype.currentText()
 		m = col.models.byName(note_type_name)
 		col.models.setCurrent(m)
-		n = col.newNote()
+		# Since we don't set the model for the selected desk, set the forDeck parameter to false
+		# to make sure the current global model is used for the new note.
+		n = col.newNote(forDeck=False)
 		simplified = row[0]
 		traditional = row[1]
 		pinyin = row[2]
