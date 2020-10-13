@@ -18,10 +18,8 @@ db_path = join(dirname(realpath(__file__)), 'CC-CEDICT_dictionary.db')
 conn = connect(db_path)
 c = conn.cursor()
 
-
 def debug(s):
 	sys.stdout.write(s + "\n")
-
 
 def split_string(s: str) -> List[str]:
 	"""
@@ -48,7 +46,6 @@ class start_main(QDialog):
 		self.batch_search_mode = False
 
 	def setupUI(self):
-
 		config = mw.addonManager.getConfig(__name__)
 
 		# Find all decks and add them to dropdown
@@ -67,6 +64,16 @@ class start_main(QDialog):
 		for i in notetypelist:
 			self.dialog.Notetype.addItem(str(i))
 
+		# Set current text for config items
+		self.dialog.Input_Type.setCurrentText(config["search_config"])
+		self.dialog.Deck.setCurrentText(config["deck_config"])
+		self.dialog.Notetype.setCurrentText(config["notetype_config"])
+		self.find_fields()
+		self.dialog.Field1.setCurrentText(config["field_1_config"])
+		self.dialog.Field2.setCurrentText(config["field_2_config"])
+		self.dialog.Field3.setCurrentText(config["field_3_config"])
+		self.dialog.Field4.setCurrentText(config["field_4_config"])		
+
 		# Connect buttons
 		self.dialog.About.clicked.connect(self.about)
 		self.dialog.Add.clicked.connect(self.init_add)
@@ -79,17 +86,13 @@ class start_main(QDialog):
 		self.dialog.Field3.currentTextChanged.connect(self.save_config)
 		self.dialog.Field4.currentTextChanged.connect(self.save_config)
 		self.dialog.Deck.currentTextChanged.connect(self.save_config)
-		self.dialog.Notetype.currentTextChanged.connect(self.save_config)
+		self.dialog.Notetype.currentTextChanged.connect(self.find_fields)
 		self.dialog.Input_Type.currentTextChanged.connect(self.save_config)
 
-		# Set current text for config items
-		self.dialog.Input_Type.setCurrentText(config["search_config"])
-		self.dialog.Deck.setCurrentText(config["deck_config"])
-		self.dialog.Notetype.setCurrentText(config["notetype_config"])
-		self.dialog.Field1.setCurrentText(config["field_1_config"])
-		self.dialog.Field2.setCurrentText(config["field_2_config"])
-		self.dialog.Field3.setCurrentText(config["field_3_config"])
-		self.dialog.Field4.setCurrentText(config["field_4_config"])
+		# Tooltips
+		self.dialog.Query.setToolTip("Search and import multiple words by separating them with one of those characters: ，,#%&$/")
+		self.dialog.SearchButton.setToolTip("Search and import multiple words by separating them with one of those characters: ，,#%&$/")
+		self.dialog.Add.setToolTip("If you searched for multiple words all results will be added, otherwise the entry above will be added.")
 
 		# Align header
 		item = self.dialog.Results.horizontalHeaderItem(0)
@@ -147,8 +150,8 @@ class start_main(QDialog):
 
 	def exact_match(self, word, input_type):
 		c.execute("SELECT * FROM dictionary WHERE (%s) = (?)" % (input_type), (word,))
-		row = c.fetchone()
-		if row:
+		result = c.fetchall()
+		for row in result:
 			traditional = row[0]
 			simplified = row[1]
 			pinyin = row[2]
@@ -156,13 +159,13 @@ class start_main(QDialog):
 			english = row[3].rstrip("\n")
 			self.add_result([simplified, traditional, pinyin, english])
 			self.inputs.append([simplified, traditional, pinyin, english])
-		else:
-			if input_type != "eng":
-				self.skipped.append(word)
+		if not result and input_type != "eng":
+			self.skipped.append(word)
 
 		if input_type == "eng":
 			c.execute('SELECT * FROM dictionary WHERE eng Like ?',('%{}%'.format(word),))
-			for row in c.fetchall():
+			result = c.fetchall()
+			for row in result:
 				traditional = row[0]
 				simplified = row[1]
 				pinyin = row[2]
@@ -172,7 +175,7 @@ class start_main(QDialog):
 				if word in english_list and [simplified, traditional, pinyin, english] not in self.inputs:
 					self.add_result([simplified, traditional, pinyin, english])
 					self.inputs.append([simplified, traditional, pinyin, english])
-			if not row:
+			if not result:
 				self.skipped.append(word)
 
 	def partial_match(self, word, input_type):
@@ -242,6 +245,7 @@ class start_main(QDialog):
 		self.dialog.Hanzi.adjustSize()
 
 	def add_note(self, row):
+		config = mw.addonManager.getConfig(__name__)
 		col = mw.col
 		deck_name = self.dialog.Deck.currentText()
 		did = col.decks.id_for_name(deck_name)
@@ -256,12 +260,13 @@ class start_main(QDialog):
 		pinyin = row[2]
 		english = row[3]
 
-		n['Pinyin'] = pinyin
-		simplified_field_name = "Simplified"
+		simplified_field_name = config["field_1_config"]
 		n[simplified_field_name] = simplified
-		traditional_field_name = "Traditional"
+		traditional_field_name = config["field_2_config"]
 		n[traditional_field_name] = traditional
-		english_field_name = "English"
+		pinyin_field_name = config["field_3_config"]
+		n[pinyin_field_name] = pinyin
+		english_field_name = config["field_4_config"]
 		n[english_field_name] = english
 
 		if self.dialog.Input_Type.currentText() == "Simplified":
@@ -285,6 +290,11 @@ class start_main(QDialog):
 		tooltip("Added {} notes, skipped: {}, duplicate: {}".format(added_count, len(self.skipped), len(self.duplicate)))
 
 	def init_add(self):
+		used_fields = [self.dialog.Field1.currentText(), self.dialog.Field2.currentText(), self.dialog.Field3.currentText(), self.dialog.Field4.currentText()]
+		if any(used_fields.count(fields) > 1 for fields in used_fields):
+			showInfo("Each field can only be used once.")
+			return
+
 		if self.batch_search_mode:
 			if self.inputs:
 				self.add_multiple_notes()
@@ -304,6 +314,37 @@ class start_main(QDialog):
 		if [simp, trad, pinyin, english] not in self.duplicate:
 			tooltip("Added 1 note")
 
+	def find_fields(self):
+		# Remove old items
+		self.dialog.Field1.blockSignals(True)
+		self.dialog.Field2.blockSignals(True)
+		self.dialog.Field3.blockSignals(True)
+		self.dialog.Field4.blockSignals(True)
+
+		self.dialog.Field1.clear()
+		self.dialog.Field2.clear()
+		self.dialog.Field3.clear()
+		self.dialog.Field4.clear()
+
+		# Find fields of the selected notetype and add them to dropdown
+		out = mw.col.models.all()
+		fieldlist = []
+		for l in out:
+			if l['name'] == self.dialog.Notetype.currentText():
+				for i in l['flds']:
+					fieldlist.append(i['name'])
+		for i in fieldlist:
+			self.dialog.Field1.addItem(str(i))
+			self.dialog.Field2.addItem(str(i))
+			self.dialog.Field3.addItem(str(i))
+			self.dialog.Field4.addItem(str(i))
+
+		self.dialog.Field1.blockSignals(False)
+		self.dialog.Field2.blockSignals(False)
+		self.dialog.Field3.blockSignals(False)
+		self.dialog.Field4.blockSignals(False)
+		self.save_config()
+	
 	def save_config(self):
 		search_config = self.dialog.Input_Type.currentText()
 		deck_config = self.dialog.Deck.currentText()
