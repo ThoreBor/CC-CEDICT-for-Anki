@@ -340,7 +340,14 @@ class start_main(QDialog):
 		self.dialog.Field2.blockSignals(False)
 		self.dialog.Field3.blockSignals(False)
 		self.dialog.Field4.blockSignals(False)
-		self.save_config()
+
+		# Save notetype
+		config = mw.addonManager.getConfig(__name__)
+		notetype_config = self.dialog.Notetype.currentText()
+		config = {"search_config": config["search_config"], "deck_config": config["deck_config"], "notetype_config": notetype_config, 
+		"field_1_config": config["field_1_config"], "field_2_config": config["field_2_config"], 
+		"field_3_config": config["field_3_config"], "field_4_config": config["field_4_config"]}
+		mw.addonManager.writeConfig(__name__, config)
 	
 	def save_config(self):
 		search_config = self.dialog.Input_Type.currentText()
