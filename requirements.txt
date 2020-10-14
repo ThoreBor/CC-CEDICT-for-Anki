@@ -3,4 +3,3 @@ anki
 ankirspy
 aqt
 pytest
-PyQtWebEngine
