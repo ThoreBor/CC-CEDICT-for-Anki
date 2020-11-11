@@ -34,7 +34,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>478</width>
+        <width>526</width>
         <height>182</height>
        </rect>
       </property>
@@ -200,27 +200,12 @@
    </item>
    <item row="0" column="0" rowspan="2">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="3">
+     <item row="0" column="2">
       <widget class="QCheckBox" name="checkBox">
        <property name="text">
         <string>Show only exact matches</string>
        </property>
        <property name="checked">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QPushButton" name="SearchButton">
-       <property name="font">
-        <font>
-         <pointsize>8</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Search</string>
-       </property>
-       <property name="autoDefault">
         <bool>false</bool>
        </property>
       </widget>
@@ -241,26 +226,7 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
-      <widget class="QComboBox" name="Input_Type">
-       <item>
-        <property name="text">
-         <string>Simplified</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Traditional</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>English</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="1" column="0" colspan="4">
+     <item row="1" column="0" colspan="3">
       <widget class="QTableWidget" name="Results">
        <property name="font">
         <font>
@@ -336,6 +302,21 @@
        </column>
       </widget>
      </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="SearchButton">
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Search</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>
@@ -343,7 +324,6 @@
  <tabstops>
   <tabstop>Query</tabstop>
   <tabstop>SearchButton</tabstop>
-  <tabstop>Input_Type</tabstop>
   <tabstop>checkBox</tabstop>
   <tabstop>Deck</tabstop>
   <tabstop>Notetype</tabstop>
@@ -352,9 +332,9 @@
   <tabstop>Field3</tabstop>
   <tabstop>Field4</tabstop>
   <tabstop>Add</tabstop>
+  <tabstop>About</tabstop>
   <tabstop>Results</tabstop>
   <tabstop>scrollArea</tabstop>
-  <tabstop>About</tabstop>
  </tabstops>
  <resources>
   <include location="icons.qrc"/>

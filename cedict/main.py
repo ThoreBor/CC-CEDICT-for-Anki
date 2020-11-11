@@ -8,8 +8,7 @@ from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo, tooltip
 
-
-from ..third_party_packages.mafan import text
+from ..third_party.hanzidentifier import hanzidentifier
 
 # Connect to dictionary database
 db_path = join(dirname(realpath(__file__)), '../CC-CEDICT_dictionary.db')
@@ -135,11 +134,11 @@ class start_main(QDialog):
 	def batch_mode_search(self, words):
 		self.batch_search_mode = True
 		query = self.dialog.Query.text()
-		if text.is_traditional(query):
+		if hanzidentifier.is_traditional(query):
 			input_type = "hanzi_trad"
-		if text.is_simplified(query):
+		if hanzidentifier.is_simplified(query):
 			input_type = "hanzi_simp"
-		if not text.is_traditional(query) and not text.is_simplified(query):
+		if not hanzidentifier.is_traditional(query) and not hanzidentifier.is_simplified(query):
 			input_type = "eng"
 		for w in words:
 			self.exact_match(w, input_type)
@@ -205,17 +204,17 @@ class start_main(QDialog):
 			self.batch_mode_search(words)
 			return
 
-		if text.is_traditional(query):
+		if hanzidentifier.is_traditional(query):
 			if self.dialog.checkBox.isChecked():
 				self.exact_match(query, "hanzi_trad")
 			else:
 				self.partial_match(query, "hanzi_trad")
-		if text.is_simplified(query):
+		if hanzidentifier.is_simplified(query):
 			if self.dialog.checkBox.isChecked():
 				self.exact_match(query, "hanzi_simp")
 			else:
 				self.partial_match(query, "hanzi_simp")
-		if not text.is_traditional(query) and not text.is_simplified(query):
+		if not hanzidentifier.is_traditional(query) and not hanzidentifier.is_simplified(query):
 			if self.dialog.checkBox.isChecked():
 				self.exact_match(query, "eng")
 			else:
@@ -293,11 +292,11 @@ class start_main(QDialog):
 			showInfo("Each field can only be used once.")
 			return
 		query = self.dialog.Query.text()
-		if text.is_traditional(query):
+		if hanzidentifier.is_traditional(query):
 			input_type = "hanzi_trad"
-		if text.is_simplified(query):
+		if hanzidentifier.is_simplified(query):
 			input_type = "hanzi_simp"
-		if not text.is_traditional(query) and not text.is_simplified(query):
+		if not hanzidentifier.is_traditional(query) and not hanzidentifier.is_simplified(query):
 			input_type = "eng"
 
 		if self.batch_search_mode:
@@ -370,15 +369,24 @@ class start_main(QDialog):
 
 	def about(self):
 		about_text = """
-<h3>CC-CEDICT for Anki v1.2</h3><br>This add-on uses the <a href="https://cc-cedict.org/wiki/">CC-CEDICT</a> dictionary. 
-It is licensed under the <a href="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 License</a>.<br>
+<h3>CC-CEDICT for Anki v1.3</h3>
+CC-CEDICT for Anki is licensed under the <a href="https://github.com/ThoreBor/CC-CEDICT-for-Anki/blob/master/LICENSE">MIT License.</a><br><br>
+
+<b>This add-on also ships with the following third-party code:</b><br>
+- <a href="https://github.com/tsroten/hanzidentifier">hanzidentifier</a> by Thomas Roten (MIT Licence)<br>
+- <a href="https://github.com/tsroten/zhon">zhon</a> by Thomas Roten (MIT Licence)<br><br>
+
+This add-on uses the <a href="https://cc-cedict.org/wiki/">CC-CEDICT</a> dictionary, which is licensed under the 
+<a href="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 License</a>.<br><br>
+
 The code for the add-on is available on <a href="https://github.com/ThoreBor/CC-CEDICT-for-Anki">GitHub.</a> 
-It is licensed under the <a href="https://github.com/ThoreBor/CC-CEDICT-for-Anki/blob/master/LICENSE">MIT License.</a><br><br>
 If you like this add-on, rate and review it on <a href="https://ankiweb.net/shared/info/418828045">Anki Web</a>. 
 If you want to report a bug, or make a feature request, please create a new 
 <a href="https://github.com/ThoreBor/CC-CEDICT-for-Anki/issues">issue</a> on GitHub.<br>
+
 <div>Icon made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> 
 from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
-<br><b>© Thore Tyborski 2020 with contributions from <a href="https://github.com/HappyRay">HappyRay</a>.</b>
+
+<br><br><b>© Thore Tyborski 2020 with contributions from <a href="https://github.com/HappyRay">HappyRay</a>.</b>
 		"""
 		showInfo(about_text)
