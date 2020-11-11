@@ -8,6 +8,9 @@ from aqt import mw
 from aqt.qt import *
 from aqt.utils import showInfo, tooltip
 
+
+from ..third_party_packages.mafan import text
+
 # Connect to dictionary database
 db_path = join(dirname(realpath(__file__)), '../CC-CEDICT_dictionary.db')
 conn = connect(db_path)
@@ -62,7 +65,6 @@ class start_main(QDialog):
 			self.dialog.Notetype.addItem(str(i))
 
 		# Set current text for config items
-		self.dialog.Input_Type.setCurrentText(config["search_config"])
 		self.dialog.Deck.setCurrentText(config["deck_config"])
 		self.dialog.Notetype.setCurrentText(config["notetype_config"])
 		self.find_fields()
@@ -84,7 +86,6 @@ class start_main(QDialog):
 		self.dialog.Field4.currentTextChanged.connect(self.save_config)
 		self.dialog.Deck.currentTextChanged.connect(self.save_config)
 		self.dialog.Notetype.currentTextChanged.connect(self.find_fields)
-		self.dialog.Input_Type.currentTextChanged.connect(self.save_config)
 
 		# Tooltips
 		self.dialog.Query.setToolTip("Search and import multiple words by separating them with one of those characters: ，,#%&$/")
@@ -133,13 +134,15 @@ class start_main(QDialog):
 
 	def batch_mode_search(self, words):
 		self.batch_search_mode = True
+		query = self.dialog.Query.text()
+		if text.is_traditional(query):
+			input_type = "hanzi_trad"
+		if text.is_simplified(query):
+			input_type = "hanzi_simp"
+		if not text.is_traditional(query) and not text.is_simplified(query):
+			input_type = "eng"
 		for w in words:
-			if self.dialog.Input_Type.currentText() == "Traditional":
-				self.exact_match(w, "hanzi_trad")
-			if self.dialog.Input_Type.currentText() == "Simplified":
-				self.exact_match(w, "hanzi_simp")
-			if self.dialog.Input_Type.currentText() == "English":
-				self.exact_match(w, "eng")
+			self.exact_match(w, input_type)
 
 		if self.skipped:
 			line = "Can't find {} words: {}".format(len(self.skipped), ",".join(self.skipped))
@@ -202,19 +205,17 @@ class start_main(QDialog):
 			self.batch_mode_search(words)
 			return
 
-		if self.dialog.Input_Type.currentText() == "Traditional":
+		if text.is_traditional(query):
 			if self.dialog.checkBox.isChecked():
 				self.exact_match(query, "hanzi_trad")
 			else:
 				self.partial_match(query, "hanzi_trad")
-
-		if self.dialog.Input_Type.currentText() == "Simplified":
+		if text.is_simplified(query):
 			if self.dialog.checkBox.isChecked():
 				self.exact_match(query, "hanzi_simp")
 			else:
 				self.partial_match(query, "hanzi_simp")
-
-		if self.dialog.Input_Type.currentText() == "English":
+		if not text.is_traditional(query) and not text.is_simplified(query):
 			if self.dialog.checkBox.isChecked():
 				self.exact_match(query, "eng")
 			else:
@@ -241,7 +242,7 @@ class start_main(QDialog):
 		self.dialog.Pinyin.adjustSize()
 		self.dialog.Hanzi.adjustSize()
 
-	def add_note(self, row):
+	def add_note(self, row, input_type):
 		config = mw.addonManager.getConfig(__name__)
 		col = mw.col
 		deck_name = self.dialog.Deck.currentText()
@@ -266,11 +267,11 @@ class start_main(QDialog):
 		english_field_name = config["field_4_config"]
 		n[english_field_name] = english
 
-		if self.dialog.Input_Type.currentText() == "Simplified":
+		if input_type == "hanzi_simp":
 			note_ids = col.find_notes("{}:{}".format(simplified_field_name, simplified))
-		if self.dialog.Input_Type.currentText() == "Traditional":
+		if input_type == "hanzi_trad":
 			note_ids = col.find_notes("{}:{}".format(traditional_field_name, traditional))
-		if self.dialog.Input_Type.currentText() == "English":
+		if input_type == "eng":
 			note_ids = col.find_notes("{}:{}".format(english_field_name, english))
 
 		if note_ids:
@@ -280,9 +281,9 @@ class start_main(QDialog):
 		else:
 			col.add_note(n, did)
 
-	def add_multiple_notes(self):
+	def add_multiple_notes(self, input_type):
 		for row in self.inputs:
-			self.add_note(row)
+			self.add_note(row, input_type)
 		added_count = len(self.inputs) - len(self.duplicate)
 		tooltip("Added {} notes, skipped: {}, duplicate: {}".format(added_count, len(self.skipped), len(self.duplicate)))
 
@@ -291,10 +292,17 @@ class start_main(QDialog):
 		if any(used_fields.count(fields) > 1 for fields in used_fields):
 			showInfo("Each field can only be used once.")
 			return
+		query = self.dialog.Query.text()
+		if text.is_traditional(query):
+			input_type = "hanzi_trad"
+		if text.is_simplified(query):
+			input_type = "hanzi_simp"
+		if not text.is_traditional(query) and not text.is_simplified(query):
+			input_type = "eng"
 
 		if self.batch_search_mode:
 			if self.inputs:
-				self.add_multiple_notes()
+				self.add_multiple_notes(input_type)
 			return
 		else:
 			Hanzi = self.dialog.Hanzi.text().split("\n")
@@ -306,7 +314,7 @@ class start_main(QDialog):
 				simp = Hanzi[0]
 			pinyin = self.dialog.Pinyin.text()
 			english = self.dialog.English.text()
-			self.add_note([simp, trad, pinyin, english])
+			self.add_note([simp, trad, pinyin, english], input_type)
 
 		if [simp, trad, pinyin, english] not in self.duplicate:
 			tooltip("Added 1 note")
@@ -344,20 +352,19 @@ class start_main(QDialog):
 		# Save notetype
 		config = mw.addonManager.getConfig(__name__)
 		notetype_config = self.dialog.Notetype.currentText()
-		config = {"search_config": config["search_config"], "deck_config": config["deck_config"], "notetype_config": notetype_config, 
+		config = {"deck_config": config["deck_config"], "notetype_config": notetype_config, 
 		"field_1_config": config["field_1_config"], "field_2_config": config["field_2_config"], 
 		"field_3_config": config["field_3_config"], "field_4_config": config["field_4_config"]}
 		mw.addonManager.writeConfig(__name__, config)
 	
 	def save_config(self):
-		search_config = self.dialog.Input_Type.currentText()
 		deck_config = self.dialog.Deck.currentText()
 		notetype_config = self.dialog.Notetype.currentText()
 		field_1_config = self.dialog.Field1.currentText()
 		field_2_config = self.dialog.Field2.currentText()
 		field_3_config = self.dialog.Field3.currentText()
 		field_4_config = self.dialog.Field4.currentText()
-		config = {"search_config": search_config, "deck_config": deck_config, "notetype_config": notetype_config, 
+		config = {"deck_config": deck_config, "notetype_config": notetype_config, 
 		"field_1_config": field_1_config, "field_2_config": field_2_config, "field_3_config": field_3_config, "field_4_config": field_4_config}
 		mw.addonManager.writeConfig(__name__, config)
 
