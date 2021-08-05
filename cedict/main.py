@@ -47,8 +47,6 @@ def color_tone(pinyin):
 			return f'<span style="color:#0000ff">{pinyin}</span>'
 	return f'<span>{pinyin}</span>'
 
-
-
 class start_main(QDialog):
 
 	def __init__(self, dialog, parent=None):
@@ -428,6 +426,6 @@ If you want to report a bug, or make a feature request, please create a new
 <span>Icon made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> 
 from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></span>
 
-<br><br><b>© Thore Tyborski 2020 with contributions from <a href="https://github.com/HappyRay">HappyRay</a>.</b>
+<br><br><b>© Thore Tyborski 2021 with contributions from <a href="https://github.com/HappyRay">HappyRay</a>.</b>
 		"""
 		showInfo(about_text)
