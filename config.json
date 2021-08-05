@@ -1,1 +1,9 @@
-{"deck_config": "", "notetype_config": "", "field_1_config": "Simplified", "field_2_config": "Traditional", "field_3_config": "Pinyin", "field_4_config": "English"}
+{
+    "deck_config": "",
+    "notetype_config": "",
+    "field_1_config": "Simplified",
+    "field_2_config": "Traditional",
+    "field_3_config": "Pinyin",
+    "field_4_config": "English",
+    "color_pinyin": false
+}

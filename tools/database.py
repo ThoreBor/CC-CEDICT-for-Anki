@@ -6,7 +6,7 @@ import time
 from progressbar import *
 import sys
 
-conn = sqlite3.connect('database.db')
+conn = sqlite3.connect('CC-CEDICT_dictionary.db')
 c = conn.cursor()
 
 def create_table():
@@ -24,20 +24,21 @@ def txt_to_database(fname):
 		for line in f:
 			total += 1
 
-	widgets = [FormatLabel(''), ' ', progressbar.Bar('=', '[', ']'),' ', Percentage(),' ', ETA()]
-	bar = ProgressBar(maxval=total, widgets=widgets)
+	bar = ProgressBar(maxval=total)
 	bar.start()
 
 	with open(fname, encoding="utf8") as f:
 		for line in f:
 			bar.update(counter)
-			widgets[0] = FormatLabel('Entry: '+str("{:,}".format(counter))+"/"+ str("{:,}".format(total)))
 			counter = counter +1 
 			datalist =  line.split(" ")
 			hanzi_trad = datalist[0]
 			hanzi_simp = datalist[1]
 			p = re.match(r"[^[]*\[([^]]*)\]", line).groups()[0]
-			p = pinyin.decode(p)
+			p = p.split(" ")
+			pinyin_string = ""
+			for i in p:
+				pinyin_string = f"{pinyin_string} {pinyin.decode(i)}" if pinyin_string else f"{pinyin_string}{pinyin.decode(i)}"
 			eng = line.split("/",1)[1]
 			eng = eng.replace("/",", ")
 			eng = eng.replace("'","")
@@ -46,7 +47,7 @@ def txt_to_database(fname):
 			a = re.findall(regexp_pattern, st)
 			for i in a:
 				eng = eng.replace(i, "(" + pinyin.decode(i) + ")")
-			data_entry(hanzi_trad, hanzi_simp, p, eng)
+			data_entry(hanzi_trad, hanzi_simp, pinyin_string, eng)
 
 	bar.finish()
 
