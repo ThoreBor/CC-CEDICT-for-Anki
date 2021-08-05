@@ -30,6 +30,24 @@ def split_string(s: str) -> List[str]:
 	"""
 	return [w.strip() for w in re.split(r'[，,#%&$/]', s)]
 
+def color_tone(pinyin):
+	firstTone = "āēīōūǖ"
+	secondTone = "áéíóúǘ"
+	thirdTone = "ǎěǐǒǔǚ"
+	fourthTone = "àèìòùǜ"
+	letters = list(pinyin)
+	for i in letters:
+		if i in firstTone:
+			return f'<span style="color:#ff0000">{pinyin}</span>'
+		if i in secondTone:
+			return f'<span style="color:#d89000">{pinyin}</span>'
+		if i in thirdTone:
+			return f'<span style="color:#00a000">{pinyin}</span>'
+		if i in fourthTone:
+			return f'<span style="color:#0000ff">{pinyin}</span>'
+	return f'<span>{pinyin}</span>'
+
+
 
 class start_main(QDialog):
 
@@ -70,7 +88,8 @@ class start_main(QDialog):
 		self.dialog.Field1.setCurrentText(config["field_1_config"])
 		self.dialog.Field2.setCurrentText(config["field_2_config"])
 		self.dialog.Field3.setCurrentText(config["field_3_config"])
-		self.dialog.Field4.setCurrentText(config["field_4_config"])		
+		self.dialog.Field4.setCurrentText(config["field_4_config"])	
+		self.dialog.color_pinyin.setChecked(config["color_pinyin"])	
 
 		# Connect buttons
 		self.dialog.About.clicked.connect(self.about)
@@ -83,6 +102,7 @@ class start_main(QDialog):
 		self.dialog.Field2.currentTextChanged.connect(self.save_config)
 		self.dialog.Field3.currentTextChanged.connect(self.save_config)
 		self.dialog.Field4.currentTextChanged.connect(self.save_config)
+		self.dialog.color_pinyin.stateChanged.connect(self.save_config)
 		self.dialog.Deck.currentTextChanged.connect(self.save_config)
 		self.dialog.Notetype.currentTextChanged.connect(self.find_fields)
 
@@ -207,18 +227,24 @@ class start_main(QDialog):
 		if hanzidentifier.is_traditional(query):
 			if self.dialog.checkBox.isChecked():
 				self.exact_match(query, "hanzi_trad")
+				return
 			else:
 				self.partial_match(query, "hanzi_trad")
+				return
 		if hanzidentifier.is_simplified(query):
 			if self.dialog.checkBox.isChecked():
 				self.exact_match(query, "hanzi_simp")
+				return
 			else:
 				self.partial_match(query, "hanzi_simp")
+				return
 		if not hanzidentifier.is_traditional(query) and not hanzidentifier.is_simplified(query):
 			if self.dialog.checkBox.isChecked():
 				self.exact_match(query, "eng")
+				return
 			else:
 				self.partial_match(query, "eng")
+				return
 
 	def tablewidgetclicked(self):
 		for idx in self.dialog.Results.selectionModel().selectedIndexes():
@@ -241,21 +267,28 @@ class start_main(QDialog):
 		self.dialog.Pinyin.adjustSize()
 		self.dialog.Hanzi.adjustSize()
 
-	def add_note(self, row, input_type):
+	def add_note(self, row, input_type, tags):
 		config = mw.addonManager.getConfig(__name__)
 		col = mw.col
 		deck_name = self.dialog.Deck.currentText()
 		did = col.decks.id_for_name(deck_name)
 		note_type_name = self.dialog.Notetype.currentText()
+		nid = col.models.id_for_name(note_type_name)
 		m = col.models.byName(note_type_name)
 		col.models.setCurrent(m)
-		# Since we don't set the model for the selected desk, set the forDeck parameter to false
-		# to make sure the current global model is used for the new note.
-		n = col.newNote(forDeck=False)
+		n = col.new_note(nid)
 		simplified = row[0]
+		pinyin_raw = row[2]
 		traditional = row[1]
-		pinyin = row[2]
 		english = row[3]
+
+		if config["color_pinyin"]:
+			pinyin_list = pinyin_raw.split(" ")
+			pinyin = ""
+			for i in pinyin_list:
+				pinyin = f"{pinyin} {color_tone(i)}" if pinyin else f"{pinyin}{color_tone(i)}"
+		else:
+			pinyin = row[2]
 
 		simplified_field_name = config["field_1_config"]
 		n[simplified_field_name] = simplified
@@ -265,6 +298,7 @@ class start_main(QDialog):
 		n[pinyin_field_name] = pinyin
 		english_field_name = config["field_4_config"]
 		n[english_field_name] = english
+		n.add_tag(tags)
 
 		if input_type == "hanzi_simp":
 			note_ids = col.find_notes("{}:{}".format(simplified_field_name, simplified))
@@ -276,17 +310,19 @@ class start_main(QDialog):
 		if note_ids:
 			newline = "\n"
 			showInfo(f"This note already exists:\n{simplified} \t {traditional} \t {pinyin} \t {english.replace(newline, ' ')}")
-			self.duplicate.append([simplified, traditional, pinyin, english])
+			self.duplicate.append([simplified, traditional, pinyin_raw, english])
 		else:
 			col.add_note(n, did)
 
 	def add_multiple_notes(self, input_type):
+		tags = self.dialog.tags.text()
 		for row in self.inputs:
-			self.add_note(row, input_type)
+			self.add_note(row, input_type, tags)
 		added_count = len(self.inputs) - len(self.duplicate)
 		tooltip("Added {} notes, skipped: {}, duplicate: {}".format(added_count, len(self.skipped), len(self.duplicate)))
 
 	def init_add(self):
+		config = mw.addonManager.getConfig(__name__)
 		used_fields = [self.dialog.Field1.currentText(), self.dialog.Field2.currentText(), self.dialog.Field3.currentText(), self.dialog.Field4.currentText()]
 		if any(used_fields.count(fields) > 1 for fields in used_fields):
 			showInfo("Each field can only be used once.")
@@ -311,9 +347,11 @@ class start_main(QDialog):
 			else:
 				trad = Hanzi[0]
 				simp = Hanzi[0]
+
 			pinyin = self.dialog.Pinyin.text()
 			english = self.dialog.English.text()
-			self.add_note([simp, trad, pinyin, english], input_type)
+			tags = self.dialog.tags.text()
+			self.add_note([simp, trad, pinyin, english], input_type, tags)
 
 		if [simp, trad, pinyin, english] not in self.duplicate:
 			tooltip("Added 1 note")
@@ -353,7 +391,8 @@ class start_main(QDialog):
 		notetype_config = self.dialog.Notetype.currentText()
 		config = {"deck_config": config["deck_config"], "notetype_config": notetype_config, 
 		"field_1_config": config["field_1_config"], "field_2_config": config["field_2_config"], 
-		"field_3_config": config["field_3_config"], "field_4_config": config["field_4_config"]}
+		"field_3_config": config["field_3_config"], "field_4_config": config["field_4_config"],
+		"color_pinyin": config["color_pinyin"]}
 		mw.addonManager.writeConfig(__name__, config)
 	
 	def save_config(self):
@@ -363,8 +402,10 @@ class start_main(QDialog):
 		field_2_config = self.dialog.Field2.currentText()
 		field_3_config = self.dialog.Field3.currentText()
 		field_4_config = self.dialog.Field4.currentText()
+		color_pinyin_config = self.dialog.color_pinyin.isChecked()
 		config = {"deck_config": deck_config, "notetype_config": notetype_config, 
-		"field_1_config": field_1_config, "field_2_config": field_2_config, "field_3_config": field_3_config, "field_4_config": field_4_config}
+		"field_1_config": field_1_config, "field_2_config": field_2_config, "field_3_config": field_3_config, "field_4_config": field_4_config,
+		"color_pinyin": color_pinyin_config}
 		mw.addonManager.writeConfig(__name__, config)
 
 	def about(self):
@@ -384,8 +425,8 @@ If you like this add-on, rate and review it on <a href="https://ankiweb.net/shar
 If you want to report a bug, or make a feature request, please create a new 
 <a href="https://github.com/ThoreBor/CC-CEDICT-for-Anki/issues">issue</a> on GitHub.<br>
 
-<div>Icon made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> 
-from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+<span>Icon made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> 
+from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></span>
 
 <br><br><b>© Thore Tyborski 2020 with contributions from <a href="https://github.com/HappyRay">HappyRay</a>.</b>
 		"""
