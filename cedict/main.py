@@ -274,7 +274,11 @@ class start_main(QDialog):
 		nid = col.models.id_for_name(note_type_name)
 		m = col.models.byName(note_type_name)
 		col.models.setCurrent(m)
-		n = col.new_note(nid)
+		# new_note will replace newNote
+		try:
+			n = col.new_note(nid)
+		except:
+			n = col.newNote(forDeck=False)
 		simplified = row[0]
 		pinyin_raw = row[2]
 		traditional = row[1]
