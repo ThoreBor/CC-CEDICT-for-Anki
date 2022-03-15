@@ -1,4 +1,3 @@
-# This Code was originally commited to https://github.com/ThoreBor/Anki_Leaderboard by https://github.com/zjosua
 #!/bin/bash
 
 set -e
@@ -9,18 +8,31 @@ then
     exit
 fi
 
-mkdir -p forms
+mkdir -p forms/pyqt5UI
+mkdir -p forms/pyqt6UI
 
-echo "Generating forms..."
+#pyqt5
+
+echo "Generating pyqt5 forms..."
 for i in designer/*.ui
 do
     base=$(basename $i .ui)
-    py="forms/${base}.py"
+    py="forms/pyqt5UI/${base}.py"
     if [ $i -nt $py ]; then
         echo " * "$py
-        pyuic5 --from-imports $i -o $py
+        pyuic5 $i -o $py
     fi
 done
 
-echo "Building resources.."
-pyrcc5 designer/icons.qrc -o forms/icons_rc.py
+#pyqt6
+
+echo "Generating pyqt6 forms..."
+for i in designer/*.ui
+do
+    base=$(basename $i .ui)
+    py="forms//pyqt6UI/${base}.py"
+    if [ $i -nt $py ]; then
+        echo " * "$py
+        pyuic6 $i -o $py
+    fi
+done

@@ -47,6 +47,7 @@ def txt_to_database(fname):
 			a = re.findall(regexp_pattern, st)
 			for i in a:
 				eng = eng.replace(i, "(" + pinyin.decode(i) + ")")
+			eng = eng.rstrip(", \n")
 			data_entry(hanzi_trad, hanzi_simp, pinyin_string, eng)
 
 	bar.finish()

@@ -3,10 +3,16 @@ from os.path import dirname, join, realpath
 from sqlite3 import connect
 from typing import List
 
-from PyQt5 import QtGui, QtWidgets
 from aqt import mw
-from aqt.qt import *
+from aqt.qt import QDialog, QIcon, QPixmap, qtmajor
 from aqt.utils import showInfo, tooltip
+
+if qtmajor > 5:
+	from PyQt6.QtCore import Qt
+	from PyQt6 import QtGui, QtWidgets
+else:
+	from PyQt5.QtCore import Qt
+	from PyQt5 import QtGui, QtWidgets
 
 from ..third_party.hanzidentifier import hanzidentifier
 
@@ -19,7 +25,6 @@ c = conn.cursor()
 def debug(s):
 	sys.stdout.write(s + "\n")
 
-
 def split_string(s: str) -> List[str]:
 	"""
 	Split a string using one of the supported separator characters.
@@ -28,7 +33,7 @@ def split_string(s: str) -> List[str]:
 	:param s: a string
 	:return:
 	"""
-	return [w.strip() for w in re.split(r'[，,#%&$/]', s)]
+	return [w.strip() for w in re.split(r'[\n，,#%&$/ ]', s, re.M)]
 
 def color_tone(pinyin):
 	firstTone = "āēīōūǖ"
@@ -62,6 +67,11 @@ class start_main(QDialog):
 
 	def setupUI(self):
 		config = mw.addonManager.getConfig(__name__)
+
+		# set icon
+		icon = QIcon()
+		icon.addPixmap(QPixmap(join(dirname(dirname(realpath(__file__))), "designer/icons/icon.png")), QIcon.Mode.Normal, QIcon.State.Off)
+		self.setWindowIcon(icon)
 
 		# Find all decks and add them to dropdown
 		out = mw.col.decks.all()
@@ -126,7 +136,7 @@ class start_main(QDialog):
 			simplified = row[1]
 			p = row[2]
 			english = row[3]
-			english = english[:-3]
+			english = english
 			result = [simplified, traditional, p, english]
 			self.add_result(result)
 
@@ -171,9 +181,8 @@ class start_main(QDialog):
 		for row in result:
 			traditional = row[0]
 			simplified = row[1]
-			pinyin = row[2]
-			# the English part contains a new line.
-			english = row[3].rstrip("\n")
+			pinyin = row[2]	
+			english = row[3]
 			self.add_result([simplified, traditional, pinyin, english])
 			self.inputs.append([simplified, traditional, pinyin, english])
 		if not result and input_type != "eng":
@@ -187,7 +196,6 @@ class start_main(QDialog):
 				simplified = row[1]
 				pinyin = row[2]
 				english = row[3]
-				english = english[:-3]
 				english_list = english.split(",")
 				if word in english_list and [simplified, traditional, pinyin, english] not in self.inputs:
 					self.add_result([simplified, traditional, pinyin, english])
@@ -201,8 +209,7 @@ class start_main(QDialog):
 			traditional = row[0]
 			simplified = row[1]
 			pinyin = row[2]
-			# the English part contains a new line.
-			english = row[3].rstrip("\n")
+			english = row[3]
 			if [simplified, traditional, pinyin, english] not in self.inputs:
 				self.add_result([simplified, traditional, pinyin, english])
 				self.inputs.append([simplified, traditional, pinyin, english])
@@ -237,12 +244,9 @@ class start_main(QDialog):
 				self.partial_match(query, "hanzi_simp")
 				return
 		if not hanzidentifier.is_traditional(query) and not hanzidentifier.is_simplified(query):
-			if self.dialog.checkBox.isChecked():
-				self.exact_match(query, "eng")
-				return
-			else:
-				self.partial_match(query, "eng")
-				return
+			self.dialog.checkBox.setChecked(True)
+			self.exact_match(query, "eng")
+			return		
 
 	def tablewidgetclicked(self):
 		for idx in self.dialog.Results.selectionModel().selectedIndexes():
@@ -282,7 +286,7 @@ class start_main(QDialog):
 		simplified = row[0]
 		pinyin_raw = row[2]
 		traditional = row[1]
-		english = row[3]
+		english = row[3].rstrip(", ")
 
 		if config["color_pinyin"]:
 			pinyin_list = pinyin_raw.split(" ")
@@ -302,13 +306,17 @@ class start_main(QDialog):
 		n[english_field_name] = english
 		n.add_tag(tags)
 
-		if input_type == "hanzi_simp":
-			note_ids = col.find_notes("{}:{}".format(simplified_field_name, simplified))
-		if input_type == "hanzi_trad":
-			note_ids = col.find_notes("{}:{}".format(traditional_field_name, traditional))
-		if input_type == "eng":
-			note_ids = col.find_notes("{}:{}".format(english_field_name, english))
-
+		note_ids_simplified = col.find_notes("{}:{}".format(simplified_field_name, simplified))
+		note_ids_traditional = col.find_notes("{}:{}".format(traditional_field_name, traditional))
+		note_ids_english = col.find_notes("{}:{}".format(english_field_name, english))
+		note_ids = []
+		for i in note_ids_simplified:
+			note_ids.append(i)
+		for i in note_ids_traditional:
+			note_ids.append(i)
+		for i in note_ids_english:
+			note_ids.append(i)
+		
 		if note_ids:
 			newline = "\n"
 			showInfo(f"This note already exists:\n{simplified} \t {traditional} \t {pinyin} \t {english.replace(newline, ' ')}")
@@ -351,7 +359,7 @@ class start_main(QDialog):
 				simp = Hanzi[0]
 
 			pinyin = self.dialog.Pinyin.text()
-			english = self.dialog.English.text()
+			english = self.dialog.English.text().replace("\n", ", ")
 			tags = self.dialog.tags.text()
 			self.add_note([simp, trad, pinyin, english], input_type, tags)
 
@@ -412,7 +420,7 @@ class start_main(QDialog):
 
 	def about(self):
 		about_text = """
-<h3>CC-CEDICT for Anki v1.3</h3>
+<h3>CC-CEDICT for Anki v1.3.1</h3>
 CC-CEDICT for Anki is licensed under the <a href="https://github.com/ThoreBor/CC-CEDICT-for-Anki/blob/master/LICENSE">MIT License.</a><br><br>
 
 <b>This add-on also ships with the following third-party code:</b><br>
@@ -430,6 +438,6 @@ If you want to report a bug, or make a feature request, please create a new
 <span>Icon made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> 
 from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></span>
 
-<br><br><b>© Thore Tyborski 2021 with contributions from <a href="https://github.com/HappyRay">HappyRay</a>.</b>
+<br><br><b>© Thore Tyborski 2022 with contributions from <a href="https://github.com/HappyRay">HappyRay</a>.</b>
 		"""
 		showInfo(about_text)

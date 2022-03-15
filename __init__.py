@@ -1,7 +1,10 @@
 from aqt import mw
-from aqt.qt import QAction, QKeySequence
+from aqt.qt import QAction, QKeySequence, qtmajor
 from .cedict.main import start_main
-from .forms import dict_ui
+if qtmajor > 5:
+	from .forms.pyqt6UI import dict_ui
+else:
+	from .forms.pyqt5UI import dict_ui
 
 
 def open_dict():
