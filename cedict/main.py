@@ -15,6 +15,7 @@ else:
 	from PyQt5 import QtGui, QtWidgets
 
 from ..third_party.hanzidentifier import hanzidentifier
+from .config import *
 
 # Connect to dictionary database
 db_path = join(dirname(realpath(__file__)), '../CC-CEDICT_dictionary.db')
@@ -92,27 +93,30 @@ class start_main(QDialog):
 		# Set current text for config items
 		self.dialog.Deck.setCurrentText(config["deck_config"])
 		self.dialog.Notetype.setCurrentText(config["notetype_config"])
-		self.find_fields()
+		find_fields(self)
 		self.dialog.Field1.setCurrentText(config["field_1_config"])
 		self.dialog.Field2.setCurrentText(config["field_2_config"])
 		self.dialog.Field3.setCurrentText(config["field_3_config"])
 		self.dialog.Field4.setCurrentText(config["field_4_config"])	
 		self.dialog.color_pinyin.setChecked(config["color_pinyin"])
+		self.dialog.tags.setText(config["tags"])
+		find_tags(self)
 
 		# Connect buttons
-		self.dialog.About.clicked.connect(self.about)
+		self.dialog.About.clicked.connect(lambda: about(self))
 		self.dialog.Add.clicked.connect(self.init_add)
 		self.dialog.Results.clicked.connect(self.tablewidgetclicked)
 		self.dialog.SearchButton.clicked.connect(self.search)
 		self.dialog.Query.returnPressed.connect(self.search)
 		self.dialog.checkBox.stateChanged.connect(self.search)
-		self.dialog.Field1.currentTextChanged.connect(self.save_config)
-		self.dialog.Field2.currentTextChanged.connect(self.save_config)
-		self.dialog.Field3.currentTextChanged.connect(self.save_config)
-		self.dialog.Field4.currentTextChanged.connect(self.save_config)
-		self.dialog.color_pinyin.stateChanged.connect(self.save_config)
-		self.dialog.Deck.currentTextChanged.connect(self.save_config)
-		self.dialog.Notetype.currentTextChanged.connect(self.find_fields)
+		self.dialog.Field1.currentTextChanged.connect(lambda: save_config(self))
+		self.dialog.Field2.currentTextChanged.connect(lambda: save_config(self))
+		self.dialog.Field3.currentTextChanged.connect(lambda: save_config(self))
+		self.dialog.Field4.currentTextChanged.connect(lambda: save_config(self))
+		self.dialog.color_pinyin.stateChanged.connect(lambda: save_config(self))
+		self.dialog.Deck.currentTextChanged.connect(lambda: save_config(self))
+		self.dialog.Notetype.currentTextChanged.connect(lambda: find_fields(self))
+		self.dialog.tags.textChanged.connect(lambda: save_config(self))
 
 		# Tooltips
 		self.dialog.Query.setToolTip("Search and import multiple words by separating them with one of those characters: ，,#%&$/")
@@ -378,79 +382,3 @@ class start_main(QDialog):
 
 		if [simp, trad, pinyin, english] not in self.duplicate:
 			tooltip("Added 1 note")
-
-	def find_fields(self):
-		# Remove old items
-		self.dialog.Field1.blockSignals(True)
-		self.dialog.Field2.blockSignals(True)
-		self.dialog.Field3.blockSignals(True)
-		self.dialog.Field4.blockSignals(True)
-
-		self.dialog.Field1.clear()
-		self.dialog.Field2.clear()
-		self.dialog.Field3.clear()
-		self.dialog.Field4.clear()
-
-		# Find fields of the selected notetype and add them to dropdown
-		out = mw.col.models.all()
-		fieldlist = []
-		for l in out:
-			if l['name'] == self.dialog.Notetype.currentText():
-				for i in l['flds']:
-					fieldlist.append(i['name'])
-		for i in fieldlist:
-			self.dialog.Field1.addItem(str(i))
-			self.dialog.Field2.addItem(str(i))
-			self.dialog.Field3.addItem(str(i))
-			self.dialog.Field4.addItem(str(i))
-
-		self.dialog.Field1.blockSignals(False)
-		self.dialog.Field2.blockSignals(False)
-		self.dialog.Field3.blockSignals(False)
-		self.dialog.Field4.blockSignals(False)
-
-		# Save notetype
-		config = mw.addonManager.getConfig(__name__)
-		notetype_config = self.dialog.Notetype.currentText()
-		config = {"deck_config": config["deck_config"], "notetype_config": notetype_config, 
-		"field_1_config": config["field_1_config"], "field_2_config": config["field_2_config"], 
-		"field_3_config": config["field_3_config"], "field_4_config": config["field_4_config"],
-		"color_pinyin": config["color_pinyin"]}
-		mw.addonManager.writeConfig(__name__, config)
-	
-	def save_config(self):
-		deck_config = self.dialog.Deck.currentText()
-		notetype_config = self.dialog.Notetype.currentText()
-		field_1_config = self.dialog.Field1.currentText()
-		field_2_config = self.dialog.Field2.currentText()
-		field_3_config = self.dialog.Field3.currentText()
-		field_4_config = self.dialog.Field4.currentText()
-		color_pinyin_config = self.dialog.color_pinyin.isChecked()
-		config = {"deck_config": deck_config, "notetype_config": notetype_config, 
-		"field_1_config": field_1_config, "field_2_config": field_2_config, "field_3_config": field_3_config, "field_4_config": field_4_config,
-		"color_pinyin": color_pinyin_config}
-		mw.addonManager.writeConfig(__name__, config)
-
-	def about(self):
-		about_text = """
-<h3>CC-CEDICT for Anki v1.4</h3>
-CC-CEDICT for Anki is licensed under the <a href="https://github.com/ThoreBor/CC-CEDICT-for-Anki/blob/master/LICENSE">MIT License.</a><br><br>
-
-<b>This add-on also ships with the following third-party code:</b><br>
-- <a href="https://github.com/tsroten/hanzidentifier">hanzidentifier</a> by Thomas Roten (MIT Licence)<br>
-- <a href="https://github.com/tsroten/zhon">zhon</a> by Thomas Roten (MIT Licence)<br><br>
-
-This add-on uses the <a href="https://cc-cedict.org/wiki/">CC-CEDICT</a> dictionary, which is licensed under the 
-<a href="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 License</a>.<br><br>
-
-The code for the add-on is available on <a href="https://github.com/ThoreBor/CC-CEDICT-for-Anki">GitHub.</a> 
-If you like this add-on, rate and review it on <a href="https://ankiweb.net/shared/info/418828045">Anki Web</a>. 
-If you want to report a bug, or make a feature request, please create a new 
-<a href="https://github.com/ThoreBor/CC-CEDICT-for-Anki/issues">issue</a> on GitHub.<br>
-
-<span>Icon made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> 
-from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></span>
-
-<br><br><b>© Thore Tyborski 2022 with contributions from <a href="https://github.com/HappyRay">HappyRay</a>.</b>
-		"""
-		showInfo(about_text)
