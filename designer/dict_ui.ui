@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1080</width>
-    <height>391</height>
+    <width>1084</width>
+    <height>400</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -42,8 +42,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>526</width>
-        <height>165</height>
+        <width>528</width>
+        <height>186</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -210,10 +210,13 @@
         <item row="4" column="0" colspan="2">
          <widget class="QLineEdit" name="tags">
           <property name="focusPolicy">
-           <enum>Qt::TabFocus</enum>
+           <enum>Qt::ClickFocus</enum>
           </property>
           <property name="placeholderText">
            <string>Enter tags</string>
+          </property>
+          <property name="clearButtonEnabled">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -266,6 +269,9 @@
        </property>
        <property name="cursorPosition">
         <number>0</number>
+       </property>
+       <property name="clearButtonEnabled">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

@@ -97,12 +97,12 @@ class start_main(QDialog):
 		self.dialog.Field2.setCurrentText(config["field_2_config"])
 		self.dialog.Field3.setCurrentText(config["field_3_config"])
 		self.dialog.Field4.setCurrentText(config["field_4_config"])	
-		self.dialog.color_pinyin.setChecked(config["color_pinyin"])	
+		self.dialog.color_pinyin.setChecked(config["color_pinyin"])
 
 		# Connect buttons
 		self.dialog.About.clicked.connect(self.about)
 		self.dialog.Add.clicked.connect(self.init_add)
-		self.dialog.Results.doubleClicked.connect(self.tablewidgetclicked)
+		self.dialog.Results.clicked.connect(self.tablewidgetclicked)
 		self.dialog.SearchButton.clicked.connect(self.search)
 		self.dialog.Query.returnPressed.connect(self.search)
 		self.dialog.checkBox.stateChanged.connect(self.search)
@@ -433,7 +433,7 @@ class start_main(QDialog):
 
 	def about(self):
 		about_text = """
-<h3>CC-CEDICT for Anki v1.3.1</h3>
+<h3>CC-CEDICT for Anki v1.4</h3>
 CC-CEDICT for Anki is licensed under the <a href="https://github.com/ThoreBor/CC-CEDICT-for-Anki/blob/master/LICENSE">MIT License.</a><br><br>
 
 <b>This add-on also ships with the following third-party code:</b><br>
