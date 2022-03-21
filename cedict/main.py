@@ -130,7 +130,7 @@ class start_main(QDialog):
 		item.setTextAlignment(Qt.AlignLeft)
 
 		# Show 10 random entries
-		c.execute('SELECT * FROM dictionary ORDER BY RANDOM() LIMIT 10')
+		c.execute('SELECT * FROM dictionary WHERE LENGTH(hanzi_trad) ==2  ORDER BY RANDOM() LIMIT 10')
 		for row in c.fetchall():
 			traditional = row[0]
 			simplified = row[1]
@@ -139,6 +139,7 @@ class start_main(QDialog):
 			english = english
 			result = [simplified, traditional, p, english]
 			self.add_result(result)
+		self.first_result()
 
 	def add_result(self, result):
 		rowPosition = self.dialog.Results.rowCount()
@@ -202,6 +203,7 @@ class start_main(QDialog):
 					self.inputs.append([simplified, traditional, pinyin, english])
 			if not result:
 				self.skipped.append(word)
+		self.first_result()
 
 	def partial_match(self, word, input_type):
 		c.execute("SELECT * FROM dictionary WHERE (%s) Like ?" % (input_type), ('%{}%'.format(word),))
@@ -213,6 +215,7 @@ class start_main(QDialog):
 			if [simplified, traditional, pinyin, english] not in self.inputs:
 				self.add_result([simplified, traditional, pinyin, english])
 				self.inputs.append([simplified, traditional, pinyin, english])
+		self.first_result()
 		
 	def search(self):
 		query = self.dialog.Query.text()
@@ -246,7 +249,7 @@ class start_main(QDialog):
 		if not hanzidentifier.is_traditional(query) and not hanzidentifier.is_simplified(query):
 			self.dialog.checkBox.setChecked(True)
 			self.exact_match(query, "eng")
-			return		
+			return
 
 	def tablewidgetclicked(self):
 		for idx in self.dialog.Results.selectionModel().selectedIndexes():
@@ -255,6 +258,16 @@ class start_main(QDialog):
 		trad = self.dialog.Results.item(row, 1).text()
 		pinyin = self.dialog.Results.item(row, 2).text()
 		english = self.dialog.Results.item(row, 3).text()
+		self.show_entry(english, pinyin, trad, simp)
+
+	def first_result(self):
+		simp = self.dialog.Results.item(0, 0).text()
+		trad = self.dialog.Results.item(0, 1).text()
+		pinyin = self.dialog.Results.item(0, 2).text()
+		english = self.dialog.Results.item(0, 3).text()
+		self.show_entry(english, pinyin, trad, simp)
+
+	def show_entry(self, english, pinyin, trad, simp):
 		english = english.split(", ")
 		english_entry = ""
 		for i in english:
