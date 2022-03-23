@@ -79,7 +79,7 @@ def save_config(self):
 
 def about(self):
 	about_text = """
-<h3>CC-CEDICT for Anki v1.4</h3>
+<h3>CC-CEDICT for Anki v1.4.1</h3>
 CC-CEDICT for Anki is licensed under the <a href="https://github.com/ThoreBor/CC-CEDICT-for-Anki/blob/master/LICENSE">MIT License.</a><br><br>
 
 <b>This add-on also ships with the following third-party code:</b><br>
