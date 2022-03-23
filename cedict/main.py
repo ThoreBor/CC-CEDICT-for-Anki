@@ -265,11 +265,12 @@ class start_main(QDialog):
 		self.show_entry(english, pinyin, trad, simp)
 
 	def first_result(self):
-		simp = self.dialog.Results.item(0, 0).text()
-		trad = self.dialog.Results.item(0, 1).text()
-		pinyin = self.dialog.Results.item(0, 2).text()
-		english = self.dialog.Results.item(0, 3).text()
-		self.show_entry(english, pinyin, trad, simp)
+		if self.dialog.Results.rowCount() > 0:
+			simp = self.dialog.Results.item(0, 0).text()
+			trad = self.dialog.Results.item(0, 1).text()
+			pinyin = self.dialog.Results.item(0, 2).text()
+			english = self.dialog.Results.item(0, 3).text()
+			self.show_entry(english, pinyin, trad, simp)
 
 	def show_entry(self, english, pinyin, trad, simp):
 		english = english.split(", ")
