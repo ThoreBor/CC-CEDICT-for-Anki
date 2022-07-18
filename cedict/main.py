@@ -34,7 +34,7 @@ def split_string(s: str) -> List[str]:
 	:param s: a string
 	:return:
 	"""
-	return [w.strip() for w in re.split(r'[\n，,#%&$/ ]', s, re.M)]
+	return [w.strip() for w in re.split(r'[\n，,#%&$/ ]', s, 0, re.M)]
 
 def color_tone(pinyin):
 	firstTone = "āēīōūǖ"
