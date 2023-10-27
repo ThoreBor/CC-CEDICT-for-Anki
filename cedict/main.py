@@ -318,7 +318,7 @@ class start_main(QDialog):
 
 		note_ids_simplified = col.find_notes("{}:{}".format(simplified_field_name, simplified))
 		note_ids_traditional = col.find_notes("{}:{}".format(traditional_field_name, traditional))
-		note_ids_english = col.find_notes("{}:{}".format(english_field_name, english))
+		note_ids_english = col.find_notes("{}:{}".format(english_field_name, english.replace("or", ""))) # excluding "or" because it causes errors
 		note_ids = []
 		for i in note_ids_simplified:
 			note_ids.append(i)
