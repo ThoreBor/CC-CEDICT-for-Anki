@@ -1,10 +1,8 @@
 from aqt import mw
-from aqt.qt import QAction, QKeySequence, qtmajor
+from aqt.qt import QAction, QKeySequence
 from .cedict.main import start_main
-if qtmajor > 5:
-	from .forms.pyqt6UI import dict_ui
-else:
-	from .forms.pyqt5UI import dict_ui
+
+from .forms import dict_ui
 
 
 def open_dict():
@@ -12,7 +10,6 @@ def open_dict():
 	mw.dict.show()
 	mw.dict.raise_()
 	mw.dict.activateWindow()
-
 
 action = QAction("CC-CEDICT for Anki", mw)
 action.triggered.connect(open_dict)

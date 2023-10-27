@@ -3,7 +3,4 @@ forms/
 meta.json
 build_ui.sh
 License.txt
-third_party/hanzidentifier/__pycache__/
-third_party/zhon/cedict/__pycache__/
-cedict/__pycache__/
-third_party/zhon/__pycache__/
+__pycache__

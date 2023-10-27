@@ -41,7 +41,6 @@ def txt_to_database(fname):
 				pinyin_string = f"{pinyin_string} {pinyin.decode(i)}" if pinyin_string else f"{pinyin_string}{pinyin.decode(i)}"
 			eng = line.split("/",1)[1]
 			eng = eng.replace("/",", ")
-			eng = eng.replace("'","")
 			regexp_pattern = '\[[^\]\r\n]*\]'
 			st = eng
 			a = re.findall(regexp_pattern, st)

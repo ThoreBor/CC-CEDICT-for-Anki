@@ -4,15 +4,11 @@ from sqlite3 import connect
 from typing import List
 
 from aqt import mw
-from aqt.qt import QDialog, QIcon, QPixmap, qtmajor
+from aqt.qt import QDialog, QIcon, QPixmap
 from aqt.utils import showInfo, tooltip
 
-if qtmajor > 5:
-	from PyQt6.QtCore import Qt
-	from PyQt6 import QtGui, QtWidgets
-else:
-	from PyQt5.QtCore import Qt
-	from PyQt5 import QtGui, QtWidgets
+from PyQt6.QtCore import Qt
+from PyQt6 import QtGui, QtWidgets, QtCore
 
 from ..third_party.hanzidentifier import hanzidentifier
 from .config import *
@@ -57,7 +53,7 @@ class start_main(QDialog):
 
 	def __init__(self, dialog, parent=None):
 		self.parent = parent
-		QDialog.__init__(self, parent, Qt.Window)
+		QDialog.__init__(self, parent, Qt.WindowType.Window)
 		self.dialog = dialog
 		self.dialog.setupUi(self)
 		self.setupUI()
@@ -125,13 +121,13 @@ class start_main(QDialog):
 
 		# Align header
 		item = self.dialog.Results.horizontalHeaderItem(0)
-		item.setTextAlignment(Qt.AlignLeft)
+		item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
 		item = self.dialog.Results.horizontalHeaderItem(1)
-		item.setTextAlignment(Qt.AlignLeft)
+		item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
 		item = self.dialog.Results.horizontalHeaderItem(2)
-		item.setTextAlignment(Qt.AlignLeft)
+		item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
 		item = self.dialog.Results.horizontalHeaderItem(3)
-		item.setTextAlignment(Qt.AlignLeft)
+		item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
 
 		# Show 10 random entries
 		c.execute('SELECT * FROM dictionary WHERE LENGTH(hanzi_trad) ==2  ORDER BY RANDOM() LIMIT 10')
@@ -231,7 +227,6 @@ class start_main(QDialog):
 		self.duplicate = []
 		self.batch_search_mode = False
 		words = split_string(query)
-		# debug("words: {}, len: {}".format(str(words), len(words)))
 		if len(words) > 1:
 			self.batch_mode_search(words)
 			return
@@ -278,14 +273,11 @@ class start_main(QDialog):
 		for i in english:
 			english_entry = f"{english_entry}{i}\n"
 		if trad != simp:
-			self.dialog.Hanzi.setText(f"{trad}\n{simp}")
+			self.dialog.Hanzi.setText(f"{trad}/{simp}")
 		else:
 			self.dialog.Hanzi.setText(trad)
 		self.dialog.Pinyin.setText(pinyin)
 		self.dialog.English.setText(english_entry)
-		self.dialog.English.adjustSize()
-		self.dialog.Pinyin.adjustSize()
-		self.dialog.Hanzi.adjustSize()
 
 	def add_note(self, row, input_type, tags):
 		config = mw.addonManager.getConfig(__name__)
@@ -368,7 +360,7 @@ class start_main(QDialog):
 				self.add_multiple_notes(input_type)
 			return
 		else:
-			Hanzi = self.dialog.Hanzi.text().split("\n")
+			Hanzi = self.dialog.Hanzi.text().split("/")
 			if len(Hanzi) > 1:
 				trad = Hanzi[0]
 				simp = Hanzi[1]
@@ -377,7 +369,7 @@ class start_main(QDialog):
 				simp = Hanzi[0]
 
 			pinyin = self.dialog.Pinyin.text()
-			english = self.dialog.English.text().replace("\n", ", ")
+			english = self.dialog.English.toPlainText().replace("\n", ", ")
 			tags = self.dialog.tags.text()
 			self.add_note([simp, trad, pinyin, english], input_type, tags)
 

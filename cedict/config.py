@@ -2,10 +2,7 @@ from aqt import mw
 from aqt.utils import showInfo
 from aqt.qt import qtmajor
 
-if qtmajor > 5:
-	from PyQt6.QtWidgets import QCompleter
-else:
-	from PyQt5.QtWidgets import QCompleter
+from PyQt6.QtWidgets import QCompleter
 
 def find_fields(self):
 	# Remove old items
